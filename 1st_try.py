@@ -1,6 +1,7 @@
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
+import json
 
 # --- Page Setup ---
 st.title("Welcome to FINXHORIZON")
@@ -13,17 +14,18 @@ name = st.text_input("Hello Sir/Madam, may I know your full name?")
 if st.button("Submit Form"):
     if name:
         try:
-            # 1. API-এর সাথে কানেক্ট করা
+            # 1. API-এর সাথে কানেক্ট করা (Streamlit Secrets থেকে)
             scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
             
-            # নিচে 'secret_key.json' এর জায়গায় আপনার ডাউনলোড করা আসল json ফাইলটির নাম দিন
-            creds = Credentials.from_service_account_file("finxhorizon-form-ec743c08434a.json", scopes=scope)
+            # JSON ফাইল না খুঁজে সরাসরি Streamlit Secrets থেকে চাবি নেওয়া
+            secret_dict = json.loads(st.secrets["google_sheets_secret"])
+            creds = Credentials.from_service_account_info(secret_dict, scopes=scope)
             client = gspread.authorize(creds)
             
-            # 2. গুগল শিট ওপেন করা (আপনার শিটের নাম 'Client_Test' না হলে সেটা বদলে দিন)
+            # 2. গুগল শিট ওপেন করা 
             sheet = client.open("Client_Test").sheet1
             
-            # 3. শিটে ডেটা পাঠানো (একটি নতুন Row-তে নাম সেভ হবে)
+            # 3. শিটে ডেটা পাঠানো
             sheet.append_row([name])
             
             first_name = name.split()[0]
