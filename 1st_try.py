@@ -11,8 +11,50 @@ with open("style.css") as f:
 st.title("Welcome to FINXHORIZON")
 st.write("---")
 
+st.subheader("1. Personal Details")
+
 # Name Input
-name = st.text_input("Hello Sir/Madam, may I know your full name?")
+name = st.text_input("Hello may I know your full name?")
+
+# Gender Input
+gender = st.radio("Kindly select your gender",
+    ('MALE', 'FEMALE', 'OTHER'), index=None)
+
+if name:
+    if grnder == "MALE":
+        first_name = name.split()[0]
+        st.success(f"Thank You {first_name} Sir, it will pleasure you chose us to help.\nKindly fill the form to proced further")
+
+    elif grnder == "FEMALE":
+        first_name = name.split()[0]
+        st.success(f"Thank You {first_name} Mam, it will pleasure you chose us to help.\nKindly fill the form to proced further.") 
+
+    else:
+        first_name = name.split()[0]
+        st.success(f"Thank You {first_name} , it will pleasure you chose us to help.\nKindly fill the form to proced further.") 
+
+    phone = st.text_input("2) Phone Number:")
+
+# ৩. ইমেইল
+    email = st.text_input("3) Email Address:")
+
+
+    age = st.selectbox("5) Age:", [None] + list(range(18, 101)), format_func=lambda x: "Select age" if x is None else str(x))
+
+    # ৬. পেশা
+    profession = st.radio(
+        "6) Profession:",
+        ('Business', 'Service(Govt. / Pvt.)', 'Self Employed', 'Non Earning member'),
+        index=None
+    )
+    
+    # ৭. মাসিক আয় (পেশার ওপর ভিত্তি করে ডাইনামিক)
+    income = st.number_input("7) What is your approximate monthly income?", min_value=0, step=1000)
+    # ৮. মাসিক খরচ
+    expense = st.number_input("8) What is your approximate monthly household expense?", min_value=0, step=1000)
+
+    # ৯. বিবাহিত কি না
+    married = st.radio("9) Are you married?", ('YES', 'NO'), index=None)
 
 # Submit Button
 if st.button("Submit Form"):
