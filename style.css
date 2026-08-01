@@ -1,15 +1,12 @@
 /* style.css */
 
-/* পুরো পেজের ব্যাকগ্রাউন্ড পরিবর্তন */
-/* ব্যাকগ্রাউন্ডে ছবি সেট করার কোড */
 .stApp {
-    background-image: url("backgroung.jpg"); /* এখানে 'background.png'-এর জায়গায় আপনার আপলোড করা ছবির সঠিক নামটি লিখবেন */
-    background-size: cover;          /* ছবিটি পুরো পেজে সুন্দরভাবে ছড়িয়ে যাবে */
-    background-position: center;     /* ছবিটি মাঝ বরাবর সেট হবে */
-    background-repeat: no-repeat;    /* ছবিটি বারবার পাশাপাশি রিপিট হবে না */
+    background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url("https://raw.githubusercontent.com/aishiksarkar1-ui/finxhorizon-form/main/backgroung.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
-/* হেডলাইনের রঙ পরিবর্তন */
 h1 {
-    color: #AD9191; 
+    color: #333333; 
 }
