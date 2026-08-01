@@ -3,6 +3,10 @@ import gspread
 from google.oauth2.service_account import Credentials
 import json
 
+# CSS ফাইলটি পড়ে ওয়েবসাইটে যুক্ত করার কোড
+with open("style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 # --- Page Setup ---
 st.title("Welcome to FINXHORIZON")
 st.write("---")
