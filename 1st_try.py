@@ -27,6 +27,10 @@ if st.session_state.page == 'welcome':
     # Name Input
     name = st.text_input("NAME:", value=st.session_state.get('name', ''))
 
+    # CONTACT INFORMATION
+    phone = st.text_input("Phone Number:", value=st.session_state.get('phone', ''))
+    email = st.text_input("Email Address:", value=st.session_state.get('email', ''))
+
     # Gender Input
     gender = st.radio(
         "Kindly select your gender",
@@ -34,9 +38,7 @@ if st.session_state.page == 'welcome':
         index=None if 'gender' not in st.session_state else ('MALE', 'FEMALE', 'OTHER').index(st.session_state.gender)
     )
 
-    # CONTACT INFORMATION
-    phone = st.text_input("Phone Number:", value=st.session_state.get('phone', ''))
-    email = st.text_input("Email Address:", value=st.session_state.get('email', ''))
+   
 
     # লাইভ ওয়েলকাম মেসেজ দেখানোর জন্য চেক
     if name and gender:
@@ -86,7 +88,7 @@ elif st.session_state.page == 'main_form':
     st.subheader("Personal Information")
     
     # আগের তথ্যগুলো রিড-অন হিসেবে বা প্রি-ফিল হিসেবে দেখানো
-    st.info(f"**Name:** {st.session_state.name} | **Phone:** {st.session_state.phone}")
+    st.info(f"**Name:** {st.session_state.name}  \n**Phone:** {st.session_state.phone}  \n**Email:** {st.session_state.phone}  \n**Gender:** {st.session_state.gender}")
 
     # বয়স ইনপুট
     age = st.selectbox(
