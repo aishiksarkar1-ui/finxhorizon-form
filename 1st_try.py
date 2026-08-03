@@ -87,27 +87,33 @@ if st.session_state.page == 'welcome':
 elif st.session_state.page == 'main_form':
     st.subheader("Personal Information")
     
-    # আগের তথ্যগুলো রিড-অন হিসেবে দেখানো
+    # আগের তথ্যগুলো রিড-অন হিসেবে বা প্রি-ফিল হিসেবে দেখানো
     st.info(f"**Name:** {st.session_state.name}  \n**Phone:** {st.session_state.phone}  \n**Email:** {st.session_state.email}  \n**Gender:** {st.session_state.gender}")
     
-    # --- নতুন: ট্যাব চেঞ্জ করার ফাংশন ---
-    def switch_to_tab(tab_index):
-        # সেশন স্টেটে ট্যাবের নাম বা ইনডেক্স সেট করা
-        st.session_state.active_tab = tab_index
+    # ----------------------------------------------------
+    # ১. স্ক্রিনশটের মতো ফাংশন তৈরি
+    # ----------------------------------------------------
+    def switch_tab(tab):
+        st.session_state.current_tab = tab
 
-    # সেশন স্টেটে ডিফল্ট ট্যাব সেট করা (যদি আগে থেকে না থাকে)
-    if 'active_tab' not in st.session_state:
-        st.session_state.active_tab = "Personal Info"
+    def on_tab_change():
+        # ট্যাব পরিবর্তন হলে এই ফাংশন কাজ করবে (এখানে Toast message দেওয়া যেতে পারে)
+        pass
 
-    # এখানে আমরা ট্যাবগুলো তৈরি করছি (key দিয়ে কন্ট্রোল করা হচ্ছে)
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "Personal Info", 
-        "Family & Spouse", 
-        "Income & Expenses", 
-        "Final Goals"
-    ])
+    # ----------------------------------------------------
+    # ২. স্ক্রিনশটের হুবহু লজিকে st.tabs তৈরি (on_change এবং key সহ)
+    # ----------------------------------------------------
+    tab1, tab2, tab3, tab4 = st.tabs(
+        [
+            "Personal Info", 
+            "Family & Spouse", 
+            "Income & Expenses", 
+            "Final Goals"
+        ], 
+        on_change=on_tab_change, 
+        key="current_tab"
+    )
 
-    # --- ট্যাব ১ এর কাজ ---
     with tab1:
         st.subheader("Personal Information")
         # বয়স ইনপুট
@@ -140,19 +146,24 @@ elif st.session_state.page == 'main_form':
             index=None
         )
     
-        # --- নতুন: on_click ফাংশন সহ নেক্সট বাটন ---
-        if st.button("Next", on_click=switch_to_tab, args=("Family & Spouse",)):
-            # ডেটা সেভ করা হচ্ছে
-            st.session_state.age = age
-            st.session_state.profession = profession
-            st.session_state.income = income
-            st.session_state.expenses = expenses
-            st.session_state.married = married
-            
-            st.success("Personal information saved! You are now in the next step.")
-            # on_click এর কারণে রিরান দেওয়ার দরকার নেই, ফাংশন নিজেই কাজ করবে।
+        # ----------------------------------------------------
+        # ৩. স্ক্রিনশটের মতো Next বাটনে on_click এবং args ব্যবহার
+        # ----------------------------------------------------
+        if st.button("Next", on_click=switch_tab, args=("Family & Spouse",)):
+            if age and profession and married:
+                st.session_state.age = age
+                st.session_state.profession = profession
+                st.session_state.income = income
+                st.session_state.expenses = expenses
+                st.session_state.married = married
+                
+                st.success("Personal information saved! Moving to the next step...")
+            else:
+                st.warning("Please fill in all the required details before clicking Next!")
 
-    # --- ট্যাব ২ এর কাজ ---
     with tab2:
         st.subheader("Family & Spouse Details")
-        st.write("Welcome to the next tab!")
+        if st.session_state.get('married') == 'YES':
+            st.write("Spouse information form will go here...")
+        else:
+            st.info("This section is only applicable if you are married.")
