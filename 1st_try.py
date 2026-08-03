@@ -105,10 +105,9 @@ elif st.session_state.page == 'main_form':
     )
 
     # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
-    if profession in ["Business", "Self Employed"]:
+    if profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
         income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
-    elif profession == "Service(Govt. / Pvt.)":
-        income = st.number_input("What is your salary?", min_value=0, step=1000)
+   
     else:
         income = 0
 
@@ -124,7 +123,7 @@ elif st.session_state.page == 'main_form':
 
     # পরবর্তী নেক্সট বাটন
     if st.button("Next"):
-        if age and profession and married:
+        if age and profession and married and income and expenses:
             st.session_state.age = age
             st.session_state.profession = profession
             st.session_state.income = income
