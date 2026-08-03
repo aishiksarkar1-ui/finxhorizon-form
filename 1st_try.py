@@ -87,19 +87,30 @@ if st.session_state.page == 'welcome':
 elif st.session_state.page == 'main_form':
     st.subheader("Personal Information")
     
-    # আগের তথ্যগুলো রিড-অন হিসেবে বা প্রি-ফিল হিসেবে দেখানো
+    # আগের তথ্যগুলো রিড-অন হিসেবে দেখানো
     st.info(f"**Name:** {st.session_state.name}  \n**Phone:** {st.session_state.phone}  \n**Email:** {st.session_state.email}  \n**Gender:** {st.session_state.gender}")
-    # এখানে আমরা ট্যাবগুলো তৈরি করছি (আপনার প্রয়োজনমতো ট্যাবগুলোর নাম পরে বাড়িয়ে নিতে পারবেন)
+    
+    # --- নতুন: ট্যাব চেঞ্জ করার ফাংশন ---
+    def switch_to_tab(tab_index):
+        # সেশন স্টেটে ট্যাবের নাম বা ইনডেক্স সেট করা
+        st.session_state.active_tab = tab_index
+
+    # সেশন স্টেটে ডিফল্ট ট্যাব সেট করা (যদি আগে থেকে না থাকে)
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = "Personal Info"
+
+    # এখানে আমরা ট্যাবগুলো তৈরি করছি (key দিয়ে কন্ট্রোল করা হচ্ছে)
     tab1, tab2, tab3, tab4 = st.tabs([
         "Personal Info", 
         "Family & Spouse", 
         "Income & Expenses", 
         "Final Goals"
-    ], key="current_tab_index")
+    ])
 
+    # --- ট্যাব ১ এর কাজ ---
     with tab1:
         st.subheader("Personal Information")
-        # বয়স ইনপুট
+        # বয়স ইনপুট
         age = st.selectbox(
             "May I know what age are you?", 
             [None] + list(range(18, 101)), 
@@ -113,10 +124,9 @@ elif st.session_state.page == 'main_form':
             index=None 
         )
     
-        # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
+        # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
         if profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
             income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
-       
         else:
             income = 0
     
@@ -130,20 +140,19 @@ elif st.session_state.page == 'main_form':
             index=None
         )
     
-      # পরবর্তী নেক্সট বাটন
-        if st.button("Next"):
-            if age and profession and married and income and expenses:
-                st.session_state.age = age
-                st.session_state.profession = profession
-                st.session_state.income = income
-                st.session_state.expenses = expenses
-                st.session_state.married = married
-                
-                st.success("Personal information saved! Moving to the next step...")
+        # --- নতুন: on_click ফাংশন সহ নেক্সট বাটন ---
+        if st.button("Next", on_click=switch_to_tab, args=("Family & Spouse",)):
+            # ডেটা সেভ করা হচ্ছে
+            st.session_state.age = age
+            st.session_state.profession = profession
+            st.session_state.income = income
+            st.session_state.expenses = expenses
+            st.session_state.married = married
+            
+            st.success("Personal information saved! You are now in the next step.")
+            # on_click এর কারণে রিরান দেওয়ার দরকার নেই, ফাংশন নিজেই কাজ করবে।
 
-                # ট্যাব পরিবর্তনের জন্য সঠিক স্টেট আপডেট এবং রিরান
-                st.session_state.current_tab_index = 1
-                st.rerun()
-                
-            else:
-                st.warning("Please fill in all the required details before clicking Next!") # এখানে ব্র্যাকেট ঠিক করা হয়েছে
+    # --- ট্যাব ২ এর কাজ ---
+    with tab2:
+        st.subheader("Family & Spouse Details")
+        st.write("Welcome to the next tab!")
