@@ -235,7 +235,7 @@ elif st.session_state.page == 'main_form':
                 spouse_income = 0
         
             # খরচ ইনপুট
-            spouse_expenses = st.number_input("What is your approximate monthly household expenses?", min_value=0, step=1000)
+            spouse_expenses = st.number_input("What is your spouse's approximate monthly household expenses?", min_value=0, step=1000)
         
             # বিবাহিত কি না
             child = st.radio(
