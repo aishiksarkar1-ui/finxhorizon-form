@@ -143,7 +143,7 @@ elif st.session_state.page == 'main_form':
 
 
                 # স্ক্রিনশটের মতো কোডের মাধ্যমে সরাসরি পরের ট্যাবে যাওয়ার জন্য
-                st.session_state.current_tab_index = "1"
+                st.session_state.current_tab_index = 1
                 st.rerun()
                 
             else:
