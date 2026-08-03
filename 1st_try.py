@@ -230,7 +230,7 @@ elif st.session_state.page == 'main_form':
         
             # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
             if spouse_profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
-                spouse_income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
+                spouse_income = st.number_input("What is your spouse's approximate monthly income?", min_value=0, step=1000)
             else:
                 spouse_income = 0
         
