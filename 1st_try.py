@@ -265,11 +265,13 @@ elif st.session_state.page == 'main_form':
             else:
                 st.info("This section is only applicable if you have child.")
     
-        with tab3:
+        with tab2:
             st.subheader("Child Details")
-            if st.session_state.get('married') == 'YES':
-                st.subheader("Information of spouce")
-    
+            if st.session_state.get('child') == 'YES':
+                st.write("Spouse information form will go here...")
+            else:
+                st.info("This section is only applicable if you are married.")
+        
        # else:
            #st.info("This section is only applicable if you are married.")
 
