@@ -270,8 +270,8 @@ elif st.session_state.page == 'main_form':
             if st.session_state.get('married') == 'YES':
                 st.subheader("Information of spouce")
     
-        else:
-            st.info("This section is only applicable if you are married.")
+       # else:
+           #st.info("This section is only applicable if you are married.")
 
 
     
