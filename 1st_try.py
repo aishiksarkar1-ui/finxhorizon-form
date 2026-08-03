@@ -95,7 +95,7 @@ elif st.session_state.page == 'main_form':
         "Family & Spouse", 
         "Income & Expenses", 
         "Final Goals"
-    ])
+    ], key="current_tab")
 
     with tab1:
         st.subheader("Personal Information")
@@ -140,6 +140,11 @@ elif st.session_state.page == 'main_form':
                 st.session_state.married = married
                 
                 st.success("Personal information saved! Moving to the next step...")
-                # পরবর্তী ধাপে স্পাউস বা পারিবারিক লজিক এখানে যোগ করা যাবে
+
+
+                # স্ক্রিনশটের মতো কোডের মাধ্যমে সরাসরি পরের ট্যাবে যাওয়ার জন্য
+                st.session_state.current_tab = "Family & Spouse"
+                st.rerun()
+                
             else:
                 st.warning("Please fill in all the required details before clicking Next!")
