@@ -11,10 +11,10 @@ with open("style.css") as f:
 st.title("Welcome to FINXHORIZON")
 st.write("---")
 
-st.subheader("1. Personal Details")
+st.subheader("Hello may I know your full name")
 
 # Name Input
-name = st.text_input("Hello may I know your full name?")
+name = st.text_input("NAME:?")
 
 # Gender Input
 gender = st.radio("Kindly select your gender",
