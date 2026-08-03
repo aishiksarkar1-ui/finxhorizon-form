@@ -18,9 +18,22 @@ st.write("---")
 if 'page' not in st.session_state:
     st.session_state.page = 'welcome'
 
+
+
+
+
+
+
+
+
+
 # ==========================================
 # PAGE 1: Welcome & Basic Info Form
 # ==========================================
+
+
+
+
 if st.session_state.page == 'welcome':
     st.subheader("Hello, may I know your full name?")
 
@@ -81,9 +94,26 @@ if st.session_state.page == 'welcome':
         else:
             st.warning("Doya kore sokol field thikvabe puron korun!")
 
+
+
+
+
+
+
+
+
+
+
 # ==========================================
 # PAGE 2: Main Form (Personal Information)
 # ==========================================
+
+
+
+
+
+
+
 elif st.session_state.page == 'main_form':
     st.subheader("Personal Information")
     
@@ -103,10 +133,11 @@ elif st.session_state.page == 'main_form':
     # ----------------------------------------------------
     # ২. স্ক্রিনশটের হুবহু লজিকে st.tabs তৈরি (on_change এবং key সহ)
     # ----------------------------------------------------
-    tab1, tab2, tab3, tab4 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
             "Personal Info", 
-            "Family & Spouse", 
+            "Spouse Details",
+            "Child Details",
             "Income & Expenses", 
             "Final Goals"
         ], 
@@ -114,6 +145,14 @@ elif st.session_state.page == 'main_form':
         key="current_tab"
     )
 
+
+
+
+
+    # প্রথম ট্যাব এর ডিজাইন
+    #____________________________________
+
+    
     with tab1:
         st.subheader("Personal Information")
         # বয়স ইনপুট
@@ -146,11 +185,11 @@ elif st.session_state.page == 'main_form':
             index=None
         )
     
-        # ----------------------------------------------------
-        # ৩. স্ক্রিনশটের মতো Next বাটনে on_click এবং args ব্যবহার
-        # ----------------------------------------------------
-        if st.button("Next", on_click=switch_tab, args=("Family & Spouse",)):
-            if age and profession and married:
+        # --------------------------------------
+        #  Next বাটনে পরের ট্যাব এ যাওয়া
+        # --------------------------------------
+        if st.button("Next", on_click=switch_tab, args=("Spouse Details",)):
+            if age and profession and married and income and expenses:
                 st.session_state.age = age
                 st.session_state.profession = profession
                 st.session_state.income = income
@@ -161,9 +200,74 @@ elif st.session_state.page == 'main_form':
             else:
                 st.warning("Please fill in all the required details before clicking Next!")
 
+
+
+     # 2nd ট্যাব এর ডিজাইন
+    #____________________________________
+
+
     with tab2:
-        st.subheader("Family & Spouse Details")
+        st.subheader("Spouse Details")
         if st.session_state.get('married') == 'YES':
-            st.write("Spouse information form will go here...")
-        else:
-            st.info("This section is only applicable if you are married.")
+            st.subheader("Information of spouce")
+
+            # নাম ইনপুট
+            spouse_name = st.text_input("Kindly mension your spouse name:")
+            
+            # বয়স ইনপুট
+            spouse_age = st.selectbox(
+                "May I know what is the age of your spouse?", 
+                [None] + list(range(18, 101)), 
+                format_func=lambda x: "Select age" if x is None else str(x)
+            )
+        
+            # পেশা ইনপুট
+            spouse_profession = st.radio(
+                "Kindly select your spouse's profession:",
+                ('Business', 'Service(Govt. / Pvt.)', 'Self Employed', 'Non Earning member'),
+                index=None 
+            )
+        
+            # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
+            if spouse_profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
+                spouse_income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
+            else:
+                spouse_income = 0
+        
+            # খরচ ইনপুট
+            spouse_expenses = st.number_input("What is your approximate monthly household expenses?", min_value=0, step=1000)
+        
+            # বিবাহিত কি না
+            child = st.radio(
+                "Do you have children?",
+                ('YES', 'NO'),
+                index=None
+            )
+       
+
+    
+             # ----------------------------------------------------
+            # ৩. স্ক্রিনশটের মতো Next বাটনে on_click এবং args ব্যবহার
+            # ----------------------------------------------------
+            if st.button("Next", on_click=switch_tab, args=("Child Details",)):
+                if spouse_age and spouse_profession and child and spouse_income and spouse_expenses:
+                    st.session_state.age = spouse_age
+                    st.session_state.profession = spouse_profession
+                    st.session_state.income = spouse_income
+                    st.session_state.expenses = spouse_expenses
+                    st.session_state.married = child
+                    
+                    st.success("Personal information saved! Moving to the next step...")
+                else:
+                    st.warning("Please fill in all the required details before clicking Next!")
+    
+        
+            else:
+                st.info("This section is only applicable if you have child.")
+    
+
+
+         else:st.info("This section is only applicable if you are married.")
+
+
+    
