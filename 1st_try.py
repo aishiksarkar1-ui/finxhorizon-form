@@ -267,7 +267,8 @@ elif st.session_state.page == 'main_form':
     
 
 
-         else:st.info("This section is only applicable if you are married.")
+         else:
+             st.info("This section is only applicable if you are married.")
 
 
     
