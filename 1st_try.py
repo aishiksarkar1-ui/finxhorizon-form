@@ -98,7 +98,7 @@ elif st.session_state.page == 'main_form':
     ])
 
     with tab1:
-    st.subheader("Personal Information")
+        st.subheader("Personal Information")
         # বয়স ইনপুট
         age = st.selectbox(
             "May I know what age are you?", 
