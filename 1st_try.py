@@ -202,78 +202,100 @@ elif st.session_state.page == 'main_form':
 
 
 
-     # 2nd ট্যাব এর ডিজাইন
+    # 2nd ট্যাব এর ডিজাইন
     #____________________________________
-
-
     with tab2:
         st.subheader("Spouse Details")
+        
+        # যদি বিবাহিত হয়
         if st.session_state.get('married') == 'YES':
-            st.subheader("Information of spouce")
+            st.info("Information of spouse")
 
-            # নাম ইনপুট
-            spouse_name = st.text_input("Kindly mension your spouse name:")
+            # নাম ইনপুট (key যুক্ত করা হয়েছে)
+            spouse_name = st.text_input("Kindly mention your spouse name:", key="sp_name")
             
             # বয়স ইনপুট
             spouse_age = st.selectbox(
                 "May I know what is the age of your spouse?", 
                 [None] + list(range(18, 101)), 
-                format_func=lambda x: "Select age" if x is None else str(x)
+                format_func=lambda x: "Select age" if x is None else str(x),
+                key="sp_age"
             )
         
             # পেশা ইনপুট
             spouse_profession = st.radio(
                 "Kindly select your spouse's profession:",
                 ('Business', 'Service(Govt. / Pvt.)', 'Self Employed', 'Non Earning member'),
-                index=None 
+                index=None,
+                key="sp_prof"
             )
         
             # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
             if spouse_profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
-                spouse_income = st.number_input("What is your spouse's approximate monthly income?", min_value=0, step=1000)
+                spouse_income = st.number_input("What is your spouse's approximate monthly income?", min_value=0, step=1000, key="sp_inc")
             else:
                 spouse_income = 0
         
             # খরচ ইনপুট
-            spouse_expenses = st.number_input("What is your spouse's approximate monthly household expenses?", min_value=0, step=1000)
+            spouse_expenses = st.number_input("What is your spouse's approximate monthly household expenses?", min_value=0, step=1000, key="sp_exp")
         
-            # বিবাহিত কি না
+            # সন্তান আছে কি না
             child = st.radio(
                 "Do you have children?",
                 ('YES', 'NO'),
-                index=None
+                index=None,
+                key="sp_child"
             )
        
-
-    
-             # ----------------------------------------------------
-            # ৩. স্ক্রিনশটের মতো Next বাটনে on_click এবং args ব্যবহার
             # ----------------------------------------------------
-            if st.button("Next", on_click=switch_tab, args=("Child Details",)):
-                if spouse_age and spouse_profession and child and spouse_income and spouse_expenses:
-                    st.session_state.age = spouse_age
-                    st.session_state.profession = spouse_profession
-                    st.session_state.income = spouse_income
-                    st.session_state.expenses = spouse_expenses
-                    st.session_state.married = child
+            # Next বাটনে Child Details ট্যাবে যাওয়ার ব্যবস্থা
+            # ----------------------------------------------------
+            if st.button("Next", key="btn_tab2_next", on_click=switch_tab, args=("Child Details",)):
+                if spouse_name and spouse_age and spouse_profession and child:
+                    # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
+                    st.session_state.spouse_name = spouse_name
+                    st.session_state.spouse_age = spouse_age
+                    st.session_state.spouse_profession = spouse_profession
+                    st.session_state.spouse_income = spouse_income
+                    st.session_state.spouse_expenses = spouse_expenses
+                    st.session_state.child = child
                     
-                    st.success("Personal information saved! Moving to the next step...")
+                    st.success("Spouse information saved! Moving to the next step...")
                 else:
                     st.warning("Please fill in all the required details before clicking Next!")
-    
         
-            else:
-                st.info("This section is only applicable if you have child.")
-    
-        with tab2:
-            st.subheader("Child Details")
-            if st.session_state.get('child') == 'YES':
-                st.write("Spouse information form will go here...")
-            else:
-                st.info("This section is only applicable if you are married.")
-        
-       # else:
-           #st.info("This section is only applicable if you are married.")
+        # যদি অবিবাহিত হয়
+        elif st.session_state.get('married') == 'NO':
+            st.info("Since you are unmarried, this section is not applicable.")
+            # অবিবাহিত হলে স্পাউস এবং চাইল্ড সেকশন স্কিপ করে সরাসরি ইনকাম পেজে চলে যাবে
+            if st.button("Skip to Income & Expenses", key="btn_tab2_skip", on_click=switch_tab, args=("Income & Expenses",)):
+                pass
+                
+        else:
+            st.warning("Please fill the Personal Info tab first.")
 
 
+    # 3rd ট্যাব এর ডিজাইন
+    #____________________________________
+    with tab3:
+        st.subheader("Child Details")
+        
+        if st.session_state.get('child') == 'YES':
+            st.write("Child information form will go here...")
+            
+            # এখানে আপাতত টেস্ট করার জন্য একটি নেক্সট বাটন দেওয়া হলো
+            if st.button("Next", key="btn_tab3_next", on_click=switch_tab, args=("Income & Expenses",)):
+                pass
+                
+        elif st.session_state.get('child') == 'NO':
+            st.info("Since you do not have children, this section is not applicable.")
+            if st.button("Skip to Next Step", key="btn_tab3_skip", on_click=switch_tab, args=("Income & Expenses",)):
+                pass
+                
+        elif st.session_state.get('married') == 'NO':
+             st.info("Since you are unmarried, this section is not applicable.")
+             
+        else:
+            st.warning("Please fill the Spouse Details tab first.")
+   
     
