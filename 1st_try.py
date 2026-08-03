@@ -88,49 +88,58 @@ elif st.session_state.page == 'main_form':
     st.subheader("Personal Information")
     
     # আগের তথ্যগুলো রিড-অন হিসেবে বা প্রি-ফিল হিসেবে দেখানো
-    st.info(f"**Name:** {st.session_state.name}  \n**Phone:** {st.session_state.phone}  \n**Email:** {st.session_state.phone}  \n**Gender:** {st.session_state.gender}")
+    st.info(f"**Name:** {st.session_state.name}  \n**Phone:** {st.session_state.phone}  \n**Email:** {st.session_state.email}  \n**Gender:** {st.session_state.gender}")
+    # এখানে আমরা ট্যাবগুলো তৈরি করছি (আপনার প্রয়োজনমতো ট্যাবগুলোর নাম পরে বাড়িয়ে নিতে পারবেন)
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "Personal Info", 
+        "Family & Spouse", 
+        "Income & Expenses", 
+        "Final Goals"
+    ])
 
-    # বয়স ইনপুট
-    age = st.selectbox(
-        "May I know what age are you?", 
-        [None] + list(range(18, 101)), 
-        format_func=lambda x: "Select age" if x is None else str(x)
-    )
-
-    # পেশা ইনপুট
-    profession = st.radio(
-        "Kindly select your profession:",
-        ('Business', 'Service(Govt. / Pvt.)', 'Self Employed', 'Non Earning member'),
-        index=None 
-    )
-
-    # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
-    if profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
-        income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
-   
-    else:
-        income = 0
-
-    # খরচ ইনপুট
-    expenses = st.number_input("What is your approximate monthly household expenses?", min_value=0, step=1000)
-
-    # বিবাহিত কি না
-    married = st.radio(
-        "Are you married?",
-        ('YES', 'NO'),
-        index=None
-    )
-
-    # পরবর্তী নেক্সট বাটন
-    if st.button("Next"):
-        if age and profession and married and income and expenses:
-            st.session_state.age = age
-            st.session_state.profession = profession
-            st.session_state.income = income
-            st.session_state.expenses = expenses
-            st.session_state.married = married
-            
-            st.success("Personal information saved! Moving to the next step...")
-            # পরবর্তী ধাপে স্পাউস বা পারিবারিক লজিক এখানে যোগ করা যাবে
+    with tab1:
+    st.subheader("Personal Information")
+        # বয়স ইনপুট
+        age = st.selectbox(
+            "May I know what age are you?", 
+            [None] + list(range(18, 101)), 
+            format_func=lambda x: "Select age" if x is None else str(x)
+        )
+    
+        # পেশা ইনপুট
+        profession = st.radio(
+            "Kindly select your profession:",
+            ('Business', 'Service(Govt. / Pvt.)', 'Self Employed', 'Non Earning member'),
+            index=None 
+        )
+    
+        # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
+        if profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
+            income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
+       
         else:
-            st.warning("Please fill in all the required details before clicking Next!")
+            income = 0
+    
+        # খরচ ইনপুট
+        expenses = st.number_input("What is your approximate monthly household expenses?", min_value=0, step=1000)
+    
+        # বিবাহিত কি না
+        married = st.radio(
+            "Are you married?",
+            ('YES', 'NO'),
+            index=None
+        )
+    
+        # পরবর্তী নেক্সট বাটন
+        if st.button("Next"):
+            if age and profession and married and income and expenses:
+                st.session_state.age = age
+                st.session_state.profession = profession
+                st.session_state.income = income
+                st.session_state.expenses = expenses
+                st.session_state.married = married
+                
+                st.success("Personal information saved! Moving to the next step...")
+                # পরবর্তী ধাপে স্পাউস বা পারিবারিক লজিক এখানে যোগ করা যাবে
+            else:
+                st.warning("Please fill in all the required details before clicking Next!")
