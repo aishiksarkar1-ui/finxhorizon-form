@@ -3,82 +3,133 @@ import gspread
 from google.oauth2.service_account import Credentials
 import json
 
-# CSS ফাইলটি পড়ে ওয়েবসাইটে যুক্ত করার কোড
-with open("style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+# CSS ফাইলটি পড়ে ওয়েবসাইটে যুক্ত করার কোড
+try:
+    with open("style.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+except:
+    pass
 
-# --- Page Setup ---
+# --- Page Setup & Session State Initialization ---
 st.title("Welcome to FINXHORIZON")
 st.write("---")
 
-st.subheader("Hello may I know your full name")
+# পেজ স্টেপ ট্র্যাক করার জন্য সেশন স্টেট ইনিশিয়ালাইজ করা
+if 'page' not in st.session_state:
+    st.session_state.page = 'welcome'
 
-# Name Input
-name = st.text_input("NAME:?")
+# ==========================================
+# PAGE 1: Welcome & Basic Info Form
+# ==========================================
+if st.session_state.page == 'welcome':
+    st.subheader("Hello, may I know your full name?")
 
-# Gender Input
-gender = st.radio("Kindly select your gender",
-    ('MALE', 'FEMALE', 'OTHER'), index=None)
+    # Name Input
+    name = st.text_input("NAME:", value=st.session_state.get('name', ''))
 
-if name:
-    if grnder == "MALE":
+    # Gender Input
+    gender = st.radio(
+        "Kindly select your gender",
+        ('MALE', 'FEMALE', 'OTHER'), 
+        index=None if 'gender' not in st.session_state else ('MALE', 'FEMALE', 'OTHER').index(st.session_state.gender)
+    )
+
+    # CONTACT INFORMATION
+    phone = st.text_input("Phone Number:", value=st.session_state.get('phone', ''))
+    email = st.text_input("Email Address:", value=st.session_state.get('email', ''))
+
+    # লাইভ ওয়েলকাম মেসেজ দেখানোর জন্য চেক
+    if name and gender:
         first_name = name.split()[0]
-        st.success(f"Thank You {first_name} Sir, it will pleasure you chose us to help.\nKindly fill the form to proced further")
+        if gender == "MALE":
+            st.success(f"Thank You {first_name} Sir, it is a pleasure to have you. Kindly fill the form to proceed further.")
+        elif gender == "FEMALE":
+            st.success(f"Thank You {first_name} Mam, it is a pleasure to have you. Kindly fill the form to proceed further.")
+        else:
+            st.success(f"Thank You {first_name}, it is a pleasure to have you. Kindly fill the form to proceed further.")
 
-    elif grnder == "FEMALE":
-        first_name = name.split()[0]
-        st.success(f"Thank You {first_name} Mam, it will pleasure you chose us to help.\nKindly fill the form to proced further.") 
+    # Go to Form Button & Google Sheet Integration
+    if st.button("Go to Form"):
+        if name and gender and phone and email:
+            try:
+                # 1. API-এর সাথে কানেক্ট করা (Streamlit Secrets থেকে)
+                scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+                secret_dict = json.loads(st.secrets["google_sheets_secret"])
+                creds = Credentials.from_service_account_info(secret_dict, scopes=scope)
+                client = gspread.authorize(creds)
+                
+                # 2. গুগল শিট ওপেন করা 
+                sheet = client.open("Client_Test").sheet1
+                
+                # 3. শিটে ডেটা পাঠানো (নাম, জেন্ডার, ফোন, ইমেল একসাথে একটি সারিতে)
+                sheet.append_row([name, gender, phone, email])
+                
+                # ডেটা সেশন স্টেটে সেভ করে রাখা যাতে পরের পেজেও মনে থাকে
+                st.session_state.name = name
+                st.session_state.gender = gender
+                st.session_state.phone = phone
+                st.session_state.email = email
 
-    else:
-        first_name = name.split()[0]
-        st.success(f"Thank You {first_name} , it will pleasure you chose us to help.\nKindly fill the form to proced further.") 
+                # পেজ পরিবর্তন করে মূল ফর্মে নিয়ে যাওয়া
+                st.session_state.page = 'main_form'
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Error: {e}")
+        else:
+            st.warning("Doya kore sokol field thikvabe puron korun!")
 
-    phone = st.text_input("2) Phone Number:")
+# ==========================================
+# PAGE 2: Main Form (Personal Information)
+# ==========================================
+elif st.session_state.page == 'main_form':
+    st.subheader("Personal Information")
+    
+    # আগের তথ্যগুলো রিড-অন হিসেবে বা প্রি-ফিল হিসেবে দেখানো
+    st.info(f"**Name:** {st.session_state.name} | **Phone:** {st.session_state.phone}")
 
-# ৩. ইমেইল
-    email = st.text_input("3) Email Address:")
+    # বয়স ইনপুট
+    age = st.selectbox(
+        "May I know what age are you?", 
+        [None] + list(range(18, 101)), 
+        format_func=lambda x: "Select age" if x is None else str(x)
+    )
 
-
-    age = st.selectbox("5) Age:", [None] + list(range(18, 101)), format_func=lambda x: "Select age" if x is None else str(x))
-
-    # ৬. পেশা
+    # পেশা ইনপুট
     profession = st.radio(
-        "6) Profession:",
+        "Kindly select your profession:",
         ('Business', 'Service(Govt. / Pvt.)', 'Self Employed', 'Non Earning member'),
+        index=None 
+    )
+
+    # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
+    if profession in ["Business", "Self Employed"]:
+        income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
+    elif profession == "Service(Govt. / Pvt.)":
+        income = st.number_input("What is your salary?", min_value=0, step=1000)
+    else:
+        income = 0
+
+    # খরচ ইনপুট
+    expenses = st.number_input("What is your approximate monthly household expenses?", min_value=0, step=1000)
+
+    # বিবাহিত কি না
+    married = st.radio(
+        "Are you married?",
+        ('YES', 'NO'),
         index=None
     )
-    
-    # ৭. মাসিক আয় (পেশার ওপর ভিত্তি করে ডাইনামিক)
-    income = st.number_input("7) What is your approximate monthly income?", min_value=0, step=1000)
-    # ৮. মাসিক খরচ
-    expense = st.number_input("8) What is your approximate monthly household expense?", min_value=0, step=1000)
 
-    # ৯. বিবাহিত কি না
-    married = st.radio("9) Are you married?", ('YES', 'NO'), index=None)
-
-# Submit Button
-if st.button("Submit Form"):
-    if name:
-        try:
-            # 1. API-এর সাথে কানেক্ট করা (Streamlit Secrets থেকে)
-            scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    # পরবর্তী নেক্সট বাটন
+    if st.button("Next"):
+        if age and profession and married:
+            st.session_state.age = age
+            st.session_state.profession = profession
+            st.session_state.income = income
+            st.session_state.expenses = expenses
+            st.session_state.married = married
             
-            # JSON ফাইল না খুঁজে সরাসরি Streamlit Secrets থেকে চাবি নেওয়া
-            secret_dict = json.loads(st.secrets["google_sheets_secret"])
-            creds = Credentials.from_service_account_info(secret_dict, scopes=scope)
-            client = gspread.authorize(creds)
-            
-            # 2. গুগল শিট ওপেন করা 
-            sheet = client.open("Client_Test").sheet1
-            
-            # 3. শিটে ডেটা পাঠানো
-            sheet.append_row([name])
-            
-            first_name = name.split()[0]
-            st.success(f"Thank You {first_name} Sir, your data is saved in Google Sheets!")
-            st.balloons()
-            
-        except Exception as e:
-            st.error(f"Error: {e}")
-    else:
-        st.warning("Doya kore apnar nam likhun!")
+            st.success("Personal information saved! Moving to the next step...")
+            # পরবর্তী ধাপে স্পাউস বা পারিবারিক লজিক এখানে যোগ করা যাবে
+        else:
+            st.warning("Please fill in all the required details before clicking Next!")
