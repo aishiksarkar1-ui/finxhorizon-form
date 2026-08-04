@@ -133,11 +133,12 @@ elif st.session_state.page == 'main_form':
     # ----------------------------------------------------
     # ২. স্ক্রিনশটের হুবহু লজিকে st.tabs তৈরি (on_change এবং key সহ)
     # ----------------------------------------------------
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
         [
             "Personal Info", 
             "Spouse Details",
             "Child Details",
+            "Dependent Member",
             "Income & Expenses", 
             "Final Goals"
         ], 
