@@ -381,3 +381,96 @@ elif st.session_state.page == 'main_form':
             st.session_state.dependent = dependent
             
             st.success("Details saved successfully! Moving to the next step...")
+
+
+
+# 4th ট্যাব এর ডিজাইন (Dependent Member)
+    #____________________________________
+    with tab4:
+        st.subheader("Dependent Member Details")
+        
+        # যদি ৩য় ট্যাবে Dependent থাকার কথা 'YES' বলে থাকে
+        if st.session_state.get('dependent') == 'YES':
+            st.info("Please provide the details of your dependent family members below:")
+            
+            # কতজন নির্ভরশীল সদস্য সেটা জানার ইনপুট
+            num_dependents = st.number_input(
+                "HOW MANY DEPENDENT MEMBERS ARE THERE IN YOUR FAMILY?", 
+                min_value=1, max_value=10, step=1, key="num_dep"
+            )
+            
+            # ডেটা সেভ রাখার জন্য একটি ফাঁকা লিস্ট
+            dependents_data = []
+            
+            st.write("---") 
+            
+            # লুপ চালিয়ে ডাইনামিক টেবিল/কলাম তৈরি করা
+            for i in range(num_dependents):
+                st.markdown(f"**Dependent Member {i+1}:**")
+                
+                # এবার ৪টি কলাম তৈরি করা হলো (Name, Gender, Age, Relation)
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    d_name = st.text_input("Name", key=f"d_name_{i}")
+                
+                with col2:
+                    d_gender = st.selectbox("Gender", ['MALE', 'FEMALE', 'OTHER'], index=None, key=f"d_gender_{i}")
+                
+                with col3:
+                    # বয়স (০ থেকে ১০০ বছর পর্যন্ত)
+                    d_age = st.selectbox(
+                        "Age", 
+                        [None] + list(range(0, 101)), 
+                        format_func=lambda x: "Select age" if x is None else f"{x} Years",
+                        key=f"d_age_{i}"
+                    )
+                    
+                with col4:
+                    # সম্পর্ক (Relation)
+                    d_relation = st.selectbox(
+                        "Relation", 
+                        ['FATHER', 'MOTHER', 'BROTHER', 'SISTER', 'OTHER'], 
+                        index=None, 
+                        key=f"d_rel_{i}"
+                    )
+                
+                # ইউজারের দেওয়া ডেটা লিস্টে যোগ করা হচ্ছে
+                dependents_data.append({
+                    "Name": d_name,
+                    "Gender": d_gender,
+                    "Age": d_age,
+                    "Relation": d_relation
+                })
+                
+                st.write("") # ফর্মের মাঝখানে ফাঁকা জায়গা
+            
+            # --- ভ্যালিডেশন লজিক (Smart Disabled Button) ---
+            # চেক করা হচ্ছে সব সদস্যের নাম, জেন্ডার, বয়স এবং সম্পর্ক দেওয়া হয়েছে কি না
+            is_valid = all(dep["Name"] and dep["Gender"] and (dep["Age"] is not None) and dep["Relation"] for dep in dependents_data)
+            
+            if not is_valid:
+                st.warning("⚠️ Please fill in the Name, Gender, Age, and Relation for all dependent members to enable the Next button.")
+                
+            # ----------------------------------------------------
+            # Next বাটনে Income & Expenses ট্যাবে যাওয়ার ব্যবস্থা
+            # ----------------------------------------------------
+            if st.button("Next", key="btn_tab4_next", disabled=not is_valid, on_click=switch_tab, args=("Income & Expenses",)):
+                st.session_state.dependents_data = dependents_data
+                st.success("Dependent members' details saved successfully! Moving to the next step...")
+                
+        # যদি ৩য় ট্যাবে Dependent থাকার কথা 'NO' বলে থাকে
+        elif st.session_state.get('dependent') == 'NO':
+            st.info("Since you do not have any dependent family members, this section is not applicable.")
+            if st.button("Skip to Income & Expenses", key="btn_tab4_skip", on_click=switch_tab, args=("Income & Expenses",)):
+                pass
+                
+        else:
+            st.warning("Please complete the Child & Dependent Details tab first.")
+
+
+
+
+
+
+
