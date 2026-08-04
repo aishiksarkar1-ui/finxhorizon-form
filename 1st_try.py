@@ -203,16 +203,24 @@ elif st.session_state.page == 'main_form':
 
 
 
-    # 2nd ট্যাব এর ডিজাইন
+    
+
+
+
+   # 2nd ট্যাব এর ডিজাইন
     #____________________________________
+
+
+
+    
     with tab2:
         st.subheader("Spouse Details")
         
         # যদি বিবাহিত হয়
         if st.session_state.get('married') == 'YES':
-           
+            st.info("Information of spouse")
 
-            # নাম ইনপুট (key যুক্ত করা হয়েছে)
+            # নাম ইনপুট
             spouse_name = st.text_input("Kindly mention your spouse name:", key="sp_name")
             
             # বয়স ইনপুট
@@ -247,34 +255,39 @@ elif st.session_state.page == 'main_form':
                 index=None,
                 key="sp_child"
             )
+
+            # --- ভ্যালিডেশন লজিক (Smart Disabled Button) ---
+            # চেক করা হচ্ছে: নাম ফাঁকা নয়, বয়স সিলেক্ট করা হয়েছে, পেশা সিলেক্ট করা হয়েছে এবং সন্তান আছে কি না জানানো হয়েছে।
+            is_valid = bool(spouse_name and (spouse_age is not None) and (spouse_profession is not None) and (child is not None))
+            
+            # সব ফিলাপ না হলে ওয়ার্নিং মেসেজ দেখাবে
+            if not is_valid:
+                st.warning("⚠️ Please fill in all spouse details to enable the Next button.")
        
             # ----------------------------------------------------
             # Next বাটনে Child Details ট্যাবে যাওয়ার ব্যবস্থা
             # ----------------------------------------------------
-            if st.button("Next", key="btn_tab2_next", on_click=switch_tab, args=("Child Details",)):
-                if spouse_name and spouse_age and spouse_profession and child:
-                    # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
-                    st.session_state.spouse_name = spouse_name
-                    st.session_state.spouse_age = spouse_age
-                    st.session_state.spouse_profession = spouse_profession
-                    st.session_state.spouse_income = spouse_income
-                    st.session_state.spouse_expenses = spouse_expenses
-                    st.session_state.child = child
-                    
-                    st.success("Spouse information saved! Moving to the next step...")
-                else:
-                    st.warning("Please fill in all the required details before clicking Next!")
+            # disabled=not is_valid এর কারণে ফর্ম সম্পূর্ণ না হলে বাটন কাজ করবে না
+            if st.button("Next", key="btn_tab2_next", disabled=not is_valid, on_click=switch_tab, args=("Child Details",)):
+                # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
+                st.session_state.spouse_name = spouse_name
+                st.session_state.spouse_age = spouse_age
+                st.session_state.spouse_profession = spouse_profession
+                st.session_state.spouse_income = spouse_income
+                st.session_state.spouse_expenses = spouse_expenses
+                st.session_state.child = child
+                
+                st.success("Spouse information saved! Moving to the next step...")
         
         # যদি অবিবাহিত হয়
         elif st.session_state.get('married') == 'NO':
             st.info("Since you are unmarried, this section is not applicable.")
-            # অবিবাহিত হলে স্পাউস এবং চাইল্ড সেকশন স্কিপ করে সরাসরি ইনকাম পেজে চলে যাবে
-            if st.button("Skip to Income & Expenses", key="btn_tab2_skip", on_click=switch_tab, args=("Income & Expenses",)):
+            # অবিবাহিত হলে স্পাউস সেকশন স্কিপ করে সরাসরি Child Details পেজে চলে যাবে
+            if st.button("Skip to Next Step", key="btn_tab2_skip", on_click=switch_tab, args=("Child Details",)):
                 pass
                 
         else:
             st.warning("Please fill the Personal Info tab first.")
-
 
 
 
