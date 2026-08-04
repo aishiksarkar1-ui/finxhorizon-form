@@ -153,54 +153,63 @@ elif st.session_state.page == 'main_form':
     # প্রথম ট্যাব এর ডিজাইন
     #____________________________________
 
-    
     with tab1:
         st.subheader("Personal Information")
+        
         # বয়স ইনপুট
         age = st.selectbox(
             "May I know what age are you?", 
             [None] + list(range(18, 101)), 
-            format_func=lambda x: "Select age" if x is None else str(x)
+            format_func=lambda x: "Select age" if x is None else str(x),
+            key="p_age"
         )
     
         # পেশা ইনপুট
         profession = st.radio(
             "Kindly select your profession:",
             ('Business', 'Service(Govt. / Pvt.)', 'Self Employed', 'Non Earning member'),
-            index=None 
+            index=None,
+            key="p_prof"
         )
     
         # আয় ইনপুট (পেশার ওপর ভিত্তি করে)
         if profession in ["Business", "Self Employed", "Service(Govt. / Pvt.)"]:
-            income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000)
+            income = st.number_input("What is your approximate monthly income?", min_value=0, step=1000, key="p_inc")
         else:
             income = 0
     
         # খরচ ইনপুট
-        expenses = st.number_input("What is your approximate monthly household expenses?", min_value=0, step=1000)
+        expenses = st.number_input("What is your approximate monthly household expenses?", min_value=0, step=1000, key="p_exp")
     
         # বিবাহিত কি না
         married = st.radio(
             "Are you married?",
             ('YES', 'NO'),
-            index=None
+            index=None,
+            key="p_married"
         )
+
+        # --- ভ্যালিডেশন লজিক (Smart Disabled Button) ---
+        # চেক করা হচ্ছে: বয়স, পেশা এবং বিবাহিত কি না এই ৩টি ফিল্ড সিলেক্ট করা হয়েছে কি না
+        is_valid = bool((age is not None) and (profession is not None) and (married is not None))
+        
+        # সব ফিলাপ না হলে ওয়ার্নিং মেসেজ দেখাবে
+        if not is_valid:
+            st.warning("⚠️ Please fill in your age, profession, and marital status to enable the Next button.")
     
         # --------------------------------------
-        #  Next বাটনে পরের ট্যাব এ যাওয়া
+        #  Next বাটনে পরের ট্যাব এ যাওয়া
         # --------------------------------------
-        if st.button("Next", on_click=switch_tab, args=("Spouse Details",)):
-            if age and profession and married:
-                st.session_state.age = age
-                st.session_state.profession = profession
-                st.session_state.income = income
-                st.session_state.expenses = expenses
-                st.session_state.married = married
-                
-                st.success("Personal information saved! Moving to the next step...")
-            else:
-                st.warning("Please fill in all the required details before clicking Next!")
-
+        # disabled=not is_valid এর কারণে ফর্ম সম্পূর্ণ না হলে বাটন কাজ করবে না
+        if st.button("Next", key="btn_tab1_next", disabled=not is_valid, on_click=switch_tab, args=("Spouse Details",)):
+            # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
+            st.session_state.age = age
+            st.session_state.profession = profession
+            st.session_state.income = income
+            st.session_state.expenses = expenses
+            st.session_state.married = married
+            
+            st.success("Personal information saved! Moving to the next step...")
 
 
     
