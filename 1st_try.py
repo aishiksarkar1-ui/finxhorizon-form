@@ -139,7 +139,7 @@ elif st.session_state.page == 'main_form':
             "Spouse Details",
             "Child Details",
             "Dependent Member",
-            "Income & Expenses", 
+            "Future Expenses Projection", 
             "Final Goals"
         ], 
         on_change=on_tab_change, 
@@ -359,7 +359,7 @@ elif st.session_state.page == 'main_form':
         # --- ৩. Next বাটন এবং ডাইনামিক রুট লজিক ---
         
         # dependent 'YES' হলে 4th ট্যাব (Dependent Member) এ যাবে, নাহলে 5th ট্যাব (Income & Expenses) এ যাবে
-        target_tab = "Dependent Member" if dependent == 'YES' else "Income & Expenses"
+        target_tab = "Dependent Member" if dependent == 'YES' else "Future Expenses Projection"
         
         # ভ্যালিডেশন চেক (সব ফিলাপ করা হয়েছে কি না)
         all_filled = True
@@ -455,14 +455,14 @@ elif st.session_state.page == 'main_form':
             # ----------------------------------------------------
             # Next বাটনে Income & Expenses ট্যাবে যাওয়ার ব্যবস্থা
             # ----------------------------------------------------
-            if st.button("Next", key="btn_tab4_next", disabled=not is_valid, on_click=switch_tab, args=("Income & Expenses",)):
+            if st.button("Next", key="btn_tab4_next", disabled=not is_valid, on_click=switch_tab, args=("Future Expenses Projection",)):
                 st.session_state.dependents_data = dependents_data
                 st.success("Dependent members' details saved successfully! Moving to the next step...")
                 
         # যদি ৩য় ট্যাবে Dependent থাকার কথা 'NO' বলে থাকে
         elif st.session_state.get('dependent') == 'NO':
             st.info("Since you do not have any dependent family members, this section is not applicable.")
-            if st.button("Skip to Income & Expenses", key="btn_tab4_skip", on_click=switch_tab, args=("Income & Expenses",)):
+            if st.button("Skip to Income & Expenses", key="btn_tab4_skip", on_click=switch_tab, args=("Future Expenses Projection",)):
                 pass
                 
         else:
