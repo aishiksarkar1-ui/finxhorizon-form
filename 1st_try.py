@@ -275,27 +275,81 @@ elif st.session_state.page == 'main_form':
             st.warning("Please fill the Personal Info tab first.")
 
 
-    # 3rd ট্যাব এর ডিজাইন
+  # 3rd ট্যাব এর ডিজাইন
     #____________________________________
     with tab3:
         st.subheader("Child Details")
         
+        # যদি ২য় ট্যাবে সন্তান থাকার কথা 'YES' বলে থাকে
         if st.session_state.get('child') == 'YES':
-            st.write("Child information form will go here...")
+            st.info("Please provide your children's details below:")
             
-            # এখানে আপাতত টেস্ট করার জন্য একটি নেক্সট বাটন দেওয়া হলো
-            if st.button("Next", key="btn_tab3_next", on_click=switch_tab, args=("Income & Expenses",)):
-                pass
+            # কতজন সন্তান সেটা জানার ইনপুট
+            num_children = st.number_input("How many children do you have?", min_value=1, max_value=10, step=1, key="num_child")
+            
+            # বাচ্চাদের ডেটা সেভ রাখার জন্য একটি ফাঁকা লিস্ট
+            children_data = []
+            
+            st.write("---") # একটি সুন্দর ডিভাইডার লাইন
+            
+            # লুপ চালিয়ে ডাইনামিক টেবিল/কলাম তৈরি করা
+            for i in range(num_children):
+                st.markdown(f"**Child {i+1} Details:**")
                 
+                # ৩টি কলাম তৈরি করা হলো
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    # Column 1: নাম (প্রতিটি ইনপুটে i ব্যবহার করে unique key দেওয়া হয়েছে)
+                    c_name = st.text_input("Name", key=f"c_name_{i}")
+                
+                with col2:
+                    # Column 2: জেন্ডার
+                    c_gender = st.selectbox("Gender", ['MALE', 'FEMALE', 'OTHER'], index=None, key=f"c_gender_{i}")
+                
+                with col3:
+                    # Column 3: বয়স (০ থেকে ৫০ বছর পর্যন্ত)
+                    c_age = st.selectbox(
+                        "Age", 
+                        [None] + list(range(0, 51)), 
+                        format_func=lambda x: "Select age" if x is None else f"{x} Years",
+                        key=f"c_age_{i}"
+                    )
+                
+                # ইউজারের দেওয়া ডেটা লিস্টে যোগ করা হচ্ছে
+                children_data.append({
+                    "Name": c_name,
+                    "Gender": c_gender,
+                    "Age": c_age
+                })
+                
+                st.write("") # দুটি বাচ্চার ফর্মের মাঝখানে একটু ফাঁকা জায়গা রাখার জন্য
+            
+            # ----------------------------------------------------
+            # Next বাটনে Income & Expenses ট্যাবে যাওয়ার ব্যবস্থা
+            # ----------------------------------------------------
+            if st.button("Next", key="btn_tab3_next", on_click=switch_tab, args=("Income & Expenses",)):
+                # চেক করা হচ্ছে সব বাচ্চার অন্তত নাম দেওয়া হয়েছে কি না
+                all_filled = all(child["Name"] and child["Gender"] and child["Age"] is not None for child in children_data)
+                
+                if all_filled:
+                    st.session_state.children_data = children_data
+                    st.success("Children details saved successfully! Moving to the next step...")
+                else:
+                    st.warning("Please fill in the Name, Gender, and Age for all children before clicking Next!")
+                
+        # যদি ২য় ট্যাবে সন্তান থাকার কথা 'NO' বলে থাকে
         elif st.session_state.get('child') == 'NO':
             st.info("Since you do not have children, this section is not applicable.")
-            if st.button("Skip to Next Step", key="btn_tab3_skip", on_click=switch_tab, args=("Income & Expenses",)):
+            if st.button("Skip to Income & Expenses", key="btn_tab3_skip", on_click=switch_tab, args=("Income & Expenses",)):
                 pass
                 
+        # যদি ১ম ট্যাবে অবিবাহিত সিলেক্ট করে থাকে
         elif st.session_state.get('married') == 'NO':
              st.info("Since you are unmarried, this section is not applicable.")
+             if st.button("Skip to Income & Expenses", key="btn_tab3_unmarried_skip", on_click=switch_tab, args=("Income & Expenses",)):
+                pass
              
         else:
             st.warning("Please fill the Spouse Details tab first.")
-   
     
