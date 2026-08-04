@@ -251,7 +251,7 @@ elif st.session_state.page == 'main_form':
             # Next বাটনে Child Details ট্যাবে যাওয়ার ব্যবস্থা
             # ----------------------------------------------------
             if st.button("Next", key="btn_tab2_next", on_click=switch_tab, args=("Child Details",)):
-                if spouse_name and spouse_age and spouse_profession and child:
+                if spouse_name and spouse_age and spouse_profession and spouse_income and spouse_expenses and child:
                     # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                     st.session_state.spouse_name = spouse_name
                     st.session_state.spouse_age = spouse_age
