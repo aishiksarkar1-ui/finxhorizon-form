@@ -189,7 +189,7 @@ elif st.session_state.page == 'main_form':
         #  Next বাটনে পরের ট্যাব এ যাওয়া
         # --------------------------------------
         if st.button("Next", on_click=switch_tab, args=("Spouse Details",)):
-            if age and profession and married and income and expenses:
+            if age and profession and married:
                 st.session_state.age = age
                 st.session_state.profession = profession
                 st.session_state.income = income
@@ -209,7 +209,7 @@ elif st.session_state.page == 'main_form':
         
         # যদি বিবাহিত হয়
         if st.session_state.get('married') == 'YES':
-            st.info("Information of spouse")
+           
 
             # নাম ইনপুট (key যুক্ত করা হয়েছে)
             spouse_name = st.text_input("Kindly mention your spouse name:", key="sp_name")
@@ -251,7 +251,7 @@ elif st.session_state.page == 'main_form':
             # Next বাটনে Child Details ট্যাবে যাওয়ার ব্যবস্থা
             # ----------------------------------------------------
             if st.button("Next", key="btn_tab2_next", on_click=switch_tab, args=("Child Details",)):
-                if spouse_name and spouse_age and spouse_profession and spouse_income and spouse_expenses and child:
+                if spouse_name and spouse_age and spouse_profession and child:
                     # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                     st.session_state.spouse_name = spouse_name
                     st.session_state.spouse_age = spouse_age
