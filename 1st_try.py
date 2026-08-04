@@ -282,7 +282,7 @@ elif st.session_state.page == 'main_form':
         
         # যদি ২য় ট্যাবে সন্তান থাকার কথা 'YES' বলে থাকে
         if st.session_state.get('child') == 'YES':
-            st.info("Please provide your children's details below:")
+            
             
             # কতজন সন্তান সেটা জানার ইনপুট
             num_children = st.number_input("How many children do you have?", min_value=1, max_value=10, step=1, key="num_child")
