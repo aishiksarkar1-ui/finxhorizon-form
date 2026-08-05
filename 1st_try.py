@@ -589,7 +589,6 @@ elif st.session_state.page == 'main_form':
                     
                 with col2:
                     g_marriage = st.checkbox("Marriage", value=True, key="u_marriage")
-                    g_vacation = st.checkbox("Vacation", value=True, key="u_vacation")
                     g_child_plan = st.checkbox("Child Planning", value=True, key="u_child_plan")
                     
                     num_planned_child = 0
@@ -607,7 +606,8 @@ elif st.session_state.page == 'main_form':
                 st.markdown("#### ➕ Additional Goals")
                 st.write("*(Tick to add a goal, and adjust the quantity using + / -)*")
                 
-                additional_goals = ["House", "Car", "World Tour", "Lavish Accessories", "Business Set up fund", "Gadgets"]
+                # World Tour সরানো হয়েছে এবং Vacation যোগ করা হয়েছে
+                additional_goals = ["House", "Car", "Vacation", "Lavish Accessories", "Business Set up fund", "Gadgets"]
                 selected_additional_goals = {}
                 
                 add_cols = st.columns(3)
@@ -623,7 +623,6 @@ elif st.session_state.page == 'main_form':
                 if g_insure: final_goals_list.append("Insurance Fund")
                 if g_emerg: final_goals_list.append("Contingency/Emergency Fund")
                 if g_marriage: final_goals_list.append("Marriage")
-                if g_vacation: final_goals_list.append("Vacation")
                 
                 if g_child_plan and num_planned_child > 0:
                     for i in range(1, num_planned_child + 1):
@@ -651,8 +650,6 @@ elif st.session_state.page == 'main_form':
                     m_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="m_emerg")
                 
                 with col2:
-                    m_vacation = st.checkbox("Vacation", value=True, key="m_vacation")
-                    
                     has_child = st.session_state.get('child') == 'YES'
                     m_child_plan = False
                     num_planned_child = 0
@@ -681,7 +678,8 @@ elif st.session_state.page == 'main_form':
                 st.write("---")
                 st.markdown("#### ➕ Additional Goals")
                 
-                additional_goals = ["House", "Car", "World Tour", "Lavish Accessories", "Business Set up fund", "Gadgets"]
+                # World Tour সরানো হয়েছে এবং Vacation যোগ করা হয়েছে
+                additional_goals = ["House", "Car", "Vacation", "Lavish Accessories", "Business Set up fund", "Gadgets"]
                 
                 if has_child:
                     additional_goals.insert(0, "Additional Child Planning")
@@ -699,7 +697,6 @@ elif st.session_state.page == 'main_form':
                 if m_retire: final_goals_list.append("Retirement Fund")
                 if m_insure: final_goals_list.append("Insurance Fund")
                 if m_emerg: final_goals_list.append("Contingency/Emergency Fund")
-                if m_vacation: final_goals_list.append("Vacation")
                 
                 if not has_child and m_child_plan and num_planned_child > 0:
                     for i in range(1, num_planned_child + 1):
@@ -766,7 +763,7 @@ elif st.session_state.page == 'main_form':
                             value=float(default_val), 
                             min_value=0.0, 
                             step=1000.0, 
-                            format="%0.2f", # <-- এতে বক্সের ভেতরে সুন্দরভাবে কমা এবং দশমিক দেখাবে
+                            format="%0.2f", 
                             key=f"pv_{i}",
                             label_visibility="collapsed"
                         )
