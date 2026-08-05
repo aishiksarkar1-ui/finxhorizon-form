@@ -611,10 +611,18 @@ elif st.session_state.page == 'main_form':
                     g_vacation = st.checkbox("Vacation", value=True, key="g_vacation")
                     g_child_plan = st.checkbox("Child Planning", value=True, key="g_child_plan")
                     
-                    # চাইল্ড প্ল্যানিং টিক করা থাকলে কোয়ান্টিটি ইনপুট দেখাবে
                     num_planned_child = 0
+                    child_goals_status = {} # ডায়নামিক গোলগুলোর টিক/আনটিক স্ট্যাটাস সেভ রাখার জন্য
+                    
+                    # চাইল্ড প্ল্যানিং টিক করা থাকলে কোয়ান্টিটি ইনপুট দেখাবে
                     if g_child_plan:
                         num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=1, step=1, key="plan_child_qty")
+                        
+                        # ডায়নামিকভাবে চেকবক্স তৈরি করা (যতগুলো বাচ্চা, ততগুলো এডুকেশন ও ম্যারেজ)
+                        for i in range(1, num_planned_child + 1):
+                            st.markdown(f"**🔹 For Child {i}:**")
+                            child_goals_status[f"c{i}_edu"] = st.checkbox(f"Child {i} Education", value=True, key=f"chk_c{i}_edu")
+                            child_goals_status[f"c{i}_mar"] = st.checkbox(f"Child {i} Marriage", value=True, key=f"chk_c{i}_mar")
 
                 st.write("---")
                 
@@ -644,11 +652,13 @@ elif st.session_state.page == 'main_form':
                 if g_marriage: final_goals_list.append("Marriage")
                 if g_vacation: final_goals_list.append("Vacation")
                 
-                # চাইল্ড প্ল্যানিং অনুযায়ী Education এবং Marriage গোল যুক্ত করা
+                # নতুন লজিক: চাইল্ড প্ল্যানিং অনুযায়ী শুধু টিক করা গোলগুলোই যুক্ত হবে
                 if g_child_plan and num_planned_child > 0:
                     for i in range(1, num_planned_child + 1):
-                        final_goals_list.append(f"Child {i} Education")
-                        final_goals_list.append(f"Child {i} Marriage")
+                        if child_goals_status[f"c{i}_edu"]:
+                            final_goals_list.append(f"Child {i} Education")
+                        if child_goals_status[f"c{i}_mar"]:
+                            final_goals_list.append(f"Child {i} Marriage")
                 
                 # Additional Goals যুক্ত করা (Quantity অনুযায়ী)
                 for goal, qty in selected_additional_goals.items():
@@ -658,7 +668,9 @@ elif st.session_state.page == 'main_form':
                         for i in range(1, qty + 1):
                             final_goals_list.append(f"{goal} {i}")
             
-            # (Married ক্লায়েন্টদের জন্য লজিক পরে এখানে বসবে)
+            # ----------------------------------------------------
+            # 2nd Case: বিবাহিত (Married = "YES") হলে (পরবর্তী কাজের জন্য ফাঁকা)
+            # ----------------------------------------------------
             elif st.session_state.get('married') == 'YES':
                 st.info("Goal list for married clients will go here (Pending...)")
 
@@ -707,9 +719,3 @@ elif st.session_state.page == 'main_form':
                 st.session_state.final_goals_list = final_goals_list
                 
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
-
-        else:
-            st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
-
-
-
