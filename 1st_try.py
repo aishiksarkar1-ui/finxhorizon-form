@@ -476,19 +476,6 @@ elif st.session_state.page == 'main_form':
 # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
     with tab5:
-        # --- Helper Function for Indian Currency Formatting ---
-        def format_indian_currency(num):
-            num = float(num)
-            is_negative = num < 0
-            num = abs(num)
-            s, *d = str(f"{num:.2f}").partition(".")
-            if len(s) > 3:
-                r = ",".join([s[x-2:x] for x in range(-3, -len(s), -2)][::-1] + [s[-3:]])
-            else:
-                r = s
-            formatted_num = "".join([r] + d)
-            return f"-{formatted_num}" if is_negative else formatted_num
-
         st.subheader("Future Expenses Projection")
 
         # ১. লোকেশন ইনপুট
@@ -574,8 +561,7 @@ elif st.session_state.page == 'main_form':
 
             style_status = levels[lvl]
 
-            # এখানেও আমরা ইন্ডিয়ান ফরম্যাট ফাংশনটি ব্যবহার করেছি
-            st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹ {format_indian_currency(total_expense)}** | Per Head Expense: **₹ {format_indian_currency(exp_per_head)}**")
+            st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹ {total_expense:,.2f}** | Per Head Expense: **₹ {exp_per_head:,.2f}**")
             st.success(f"As per your expenses, your default lifestyle status is: **{style_status.upper()}**")
 
             st.write("---")
@@ -737,7 +723,7 @@ elif st.session_state.page == 'main_form':
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
             # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি (Present Value এবং Indian Comma সহ)
+            # ৭. ৬-কলামের টেবিল তৈরি (Present Value সহ)
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
@@ -780,11 +766,10 @@ elif st.session_state.page == 'main_form':
                             value=float(default_val), 
                             min_value=0.0, 
                             step=1000.0, 
+                            format="%0.2f", # <-- এতে বক্সের ভেতরে সুন্দরভাবে কমা এবং দশমিক দেখাবে
                             key=f"pv_{i}",
                             label_visibility="collapsed"
                         )
-                        # ইনপুট বক্সের ঠিক নিচে ইন্ডিয়ান স্টাইলে কমা বসিয়ে দেখানো হচ্ছে
-                        st.caption(f"**₹ {format_indian_currency(pv_value)}**")
                         goal_present_values[goal] = pv_value
                         
                     with c3: st.write("-")
