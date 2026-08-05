@@ -584,7 +584,8 @@ elif st.session_state.page == 'main_form':
                 col1, col2 = st.columns(2)
                 with col1:
                     g_retire = st.checkbox("Retirement Fund", value=True, key="u_retire")
-                    g_insure = st.checkbox("Insurance Fund", value=True, key="u_insure")
+                    # Insurance Fund এর বদলে Medical Emergency Fund করা হলো
+                    g_med_emerg = st.checkbox("Medical Emergency Fund", value=True, key="u_med_emerg")
                     g_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="u_emerg")
                     
                 with col2:
@@ -606,7 +607,6 @@ elif st.session_state.page == 'main_form':
                 st.markdown("#### ➕ Additional Goals")
                 st.write("*(Tick to add a goal, and adjust the quantity using + / -)*")
                 
-                # World Tour সরানো হয়েছে এবং Vacation যোগ করা হয়েছে
                 additional_goals = ["House", "Car", "Vacation", "Lavish Accessories", "Business Set up fund", "Gadgets"]
                 selected_additional_goals = {}
                 
@@ -620,7 +620,7 @@ elif st.session_state.page == 'main_form':
                             selected_additional_goals[goal_name] = qty
 
                 if g_retire: final_goals_list.append("Retirement Fund")
-                if g_insure: final_goals_list.append("Insurance Fund")
+                if g_med_emerg: final_goals_list.append("Medical Emergency Fund")
                 if g_emerg: final_goals_list.append("Contingency/Emergency Fund")
                 if g_marriage: final_goals_list.append("Marriage")
                 
@@ -646,7 +646,8 @@ elif st.session_state.page == 'main_form':
                 col1, col2 = st.columns(2)
                 with col1:
                     m_retire = st.checkbox("Retirement Fund", value=True, key="m_retire")
-                    m_insure = st.checkbox("Insurance Fund", value=True, key="m_insure")
+                    # Insurance Fund এর বদলে Medical Emergency Fund করা হলো
+                    m_med_emerg = st.checkbox("Medical Emergency Fund", value=True, key="m_med_emerg")
                     m_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="m_emerg")
                 
                 with col2:
@@ -678,7 +679,6 @@ elif st.session_state.page == 'main_form':
                 st.write("---")
                 st.markdown("#### ➕ Additional Goals")
                 
-                # World Tour সরানো হয়েছে এবং Vacation যোগ করা হয়েছে
                 additional_goals = ["House", "Car", "Vacation", "Lavish Accessories", "Business Set up fund", "Gadgets"]
                 
                 if has_child:
@@ -695,7 +695,7 @@ elif st.session_state.page == 'main_form':
                             selected_additional_goals[goal_name] = qty
 
                 if m_retire: final_goals_list.append("Retirement Fund")
-                if m_insure: final_goals_list.append("Insurance Fund")
+                if m_med_emerg: final_goals_list.append("Medical Emergency Fund")
                 if m_emerg: final_goals_list.append("Contingency/Emergency Fund")
                 
                 if not has_child and m_child_plan and num_planned_child > 0:
@@ -753,8 +753,9 @@ elif st.session_state.page == 'main_form':
                         default_val = 0.0
                         if goal == "Retirement Fund":
                             default_val = (annual_expense * 0.70) / 0.075
-                        elif goal == "Insurance Fund":
-                            default_val = float(annual_income * 15)
+                        elif goal == "Medical Emergency Fund":
+                            # আপনার নতুন লজিক: Total Annual Expense * 5
+                            default_val = float(annual_expense * 5)
                         elif goal == "Contingency/Emergency Fund":
                             default_val = float(annual_income * 3)
                         
