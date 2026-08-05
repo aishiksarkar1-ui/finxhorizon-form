@@ -468,7 +468,12 @@ elif st.session_state.page == 'main_form':
         else:
             st.warning("Please complete the Child & Dependent Details tab first.")
 
-# 5th ট্যাব এর ডিজাইন (Future Expenses Projection)
+
+
+
+
+
+# 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
     with tab5:
         st.subheader("Future Expenses Projection")
@@ -488,11 +493,9 @@ elif st.session_state.page == 'main_form':
             user_count = 1
             spouse_count = 1 if st.session_state.get('married') == 'YES' else 0
             
-            # বাচ্চাদের সংখ্যা
             child_data = st.session_state.get('children_data', [])
             child_count = len(child_data) if st.session_state.get('child') == 'YES' else 0
             
-            # নির্ভরশীল সদস্যদের সংখ্যা
             dep_data = st.session_state.get('dependents_data', [])
             dep_count = len(dep_data) if st.session_state.get('dependent') == 'YES' else 0
 
@@ -506,9 +509,9 @@ elif st.session_state.page == 'main_form':
             # 4. Expense Per Head
             exp_per_head = total_expense / total_member if total_member > 0 else 0
 
-            # 5. Lifestyle Status Logic (আপনার দেওয়া রেঞ্জ অনুযায়ী)
+            # 5. Lifestyle Status Logic
             levels = ["Basic", "Modest", "Standard", "Comfortable", "Upper_Middle class", "Affluent", "Luxury", "Elite"]
-            lvl = 0 # ডিফল্ট ইনডেক্স
+            lvl = 0 
 
             if location == "Village":
                 if exp_per_head <= 5000: lvl = 0
@@ -519,7 +522,6 @@ elif st.session_state.page == 'main_form':
                 elif exp_per_head <= 50000: lvl = 5
                 elif exp_per_head <= 75000: lvl = 6
                 else: lvl = 7
-
             elif location == "Semi-village":
                 if exp_per_head <= 8000: lvl = 0
                 elif exp_per_head <= 12000: lvl = 1
@@ -529,7 +531,6 @@ elif st.session_state.page == 'main_form':
                 elif exp_per_head <= 75000: lvl = 5
                 elif exp_per_head <= 100000: lvl = 6
                 else: lvl = 7
-
             elif location == "Small City":
                 if exp_per_head <= 10000: lvl = 0
                 elif exp_per_head <= 15000: lvl = 1
@@ -539,7 +540,6 @@ elif st.session_state.page == 'main_form':
                 elif exp_per_head <= 100000: lvl = 5
                 elif exp_per_head <= 120000: lvl = 6
                 else: lvl = 7
-
             elif location == "City":
                 if exp_per_head <= 12000: lvl = 0
                 elif exp_per_head <= 18000: lvl = 1
@@ -549,7 +549,6 @@ elif st.session_state.page == 'main_form':
                 elif exp_per_head <= 110000: lvl = 5
                 elif exp_per_head <= 130000: lvl = 6
                 else: lvl = 7
-
             elif location == "Megacity":
                 if exp_per_head <= 15000: lvl = 0
                 elif exp_per_head <= 20000: lvl = 1
@@ -562,7 +561,6 @@ elif st.session_state.page == 'main_form':
 
             style_status = levels[lvl]
 
-            # রেজাল্ট প্রদর্শন
             st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹{total_expense:,.2f}** | Per Head Expense: **₹{exp_per_head:,.2f}**")
             st.success(f"As per your expenses, your default lifestyle status is: **{style_status.upper()}**")
 
@@ -571,7 +569,6 @@ elif st.session_state.page == 'main_form':
             st.markdown("### Do you want to upgrade or downgrade your lifestyle?")
             st.markdown("*According to your choice, your future expenses will be changed...*")
 
-            # স্মার্ট অপশন: Basic হলে ডাউনগ্রেড লুকানো থাকবে, Elite হলে আপগ্রেড লুকানো থাকবে
             options = ["Keep Same (0)"]
             if lvl > 0:
                 options.insert(0, "Downgrade (-1 Level)")
@@ -585,20 +582,134 @@ elif st.session_state.page == 'main_form':
                 key="lifestyle_change"
             )
 
-            # Next বাটন
+            st.write("---")
+
+            # ==============================================================
+            # ৭. Customized Goal List & Table (Upgrade/Downgrade এর পরে)
+            # ==============================================================
+            st.markdown("### 🎯 Customized Goal List")
+            final_goals_list = []
+
+            # ----------------------------------------------------
+            # 1st Case: অবিবাহিত (Married = "NO") হলে
+            # ----------------------------------------------------
+            if st.session_state.get('married') == 'NO':
+                st.info("Since you are unmarried, here is your customized recommended goal list:")
+                
+                # --- A. Basic Recommended Goals ---
+                st.markdown("#### 📌 Recommended Goals")
+                st.write("*(These are selected by default. You can untick any goal if you don't want it.)*")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    g_retire = st.checkbox("Retirement Fund", value=True, key="g_retire")
+                    g_insure = st.checkbox("Insurance Fund", value=True, key="g_insure")
+                    g_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="g_emerg")
+                    
+                with col2:
+                    g_marriage = st.checkbox("Marriage", value=True, key="g_marriage")
+                    g_vacation = st.checkbox("Vacation", value=True, key="g_vacation")
+                    g_child_plan = st.checkbox("Child Planning", value=True, key="g_child_plan")
+                    
+                    # চাইল্ড প্ল্যানিং টিক করা থাকলে কোয়ান্টিটি ইনপুট দেখাবে
+                    num_planned_child = 0
+                    if g_child_plan:
+                        num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=1, step=1, key="plan_child_qty")
+
+                st.write("---")
+                
+                # --- B. Additional Goals ---
+                st.markdown("#### ➕ Additional Goals")
+                st.write("*(Tick to add a goal, and adjust the quantity using + / -)*")
+                
+                additional_goals = ["House", "Car", "World Tour", "Lavish Accessories", "Business Set up fund", "Gadgets"]
+                selected_additional_goals = {}
+                
+                # ৩টি কলামে সুন্দর করে সাজানোর জন্য
+                add_cols = st.columns(3)
+                for idx, goal_name in enumerate(additional_goals):
+                    col = add_cols[idx % 3]
+                    with col:
+                        # বাই ডিফল্ট untick করা থাকবে (value=False)
+                        is_checked = st.checkbox(goal_name, value=False, key=f"chk_{goal_name}")
+                        if is_checked:
+                            # টিক দিলে কোয়ান্টিটি ইনপুট দেখাবে (ডিফল্ট 1)
+                            qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"qty_{goal_name}")
+                            selected_additional_goals[goal_name] = qty
+
+                # --- C. Final Goal List Preparation ---
+                if g_retire: final_goals_list.append("Retirement Fund")
+                if g_insure: final_goals_list.append("Insurance Fund")
+                if g_emerg: final_goals_list.append("Contingency/Emergency Fund")
+                if g_marriage: final_goals_list.append("Marriage")
+                if g_vacation: final_goals_list.append("Vacation")
+                
+                # চাইল্ড প্ল্যানিং অনুযায়ী Education এবং Marriage গোল যুক্ত করা
+                if g_child_plan and num_planned_child > 0:
+                    for i in range(1, num_planned_child + 1):
+                        final_goals_list.append(f"Child {i} Education")
+                        final_goals_list.append(f"Child {i} Marriage")
+                
+                # Additional Goals যুক্ত করা (Quantity অনুযায়ী)
+                for goal, qty in selected_additional_goals.items():
+                    if qty == 1:
+                        final_goals_list.append(goal)
+                    else:
+                        for i in range(1, qty + 1):
+                            final_goals_list.append(f"{goal} {i}")
+            
+            # (Married ক্লায়েন্টদের জন্য লজিক পরে এখানে বসবে)
+            elif st.session_state.get('married') == 'YES':
+                st.info("Goal list for married clients will go here (Pending...)")
+
+            # ==============================================================
+            # ৮. ৬-কলামের টেবিল তৈরি (Final Goals List এর উপর ভিত্তি করে)
+            # ==============================================================
+            if len(final_goals_list) > 0:
+                st.write("---")
+                st.markdown("### 📋 Your Customized Goal Table")
+                
+                # টেবিলের হেডার (৬টি কলাম)
+                h1, h2, h3, h4, h5, h6 = st.columns(6)
+                h1.markdown("**Goal Name**")
+                h2.markdown("**Col 2**")
+                h3.markdown("**Col 3**")
+                h4.markdown("**Col 4**")
+                h5.markdown("**Col 5**")
+                h6.markdown("**Col 6**")
+                
+                st.markdown("---")
+                
+                # যতগুলো গোল, ঠিক ততগুলো সারি (Row) তৈরি করা
+                for i, goal in enumerate(final_goals_list):
+                    c1, c2, c3, c4, c5, c6 = st.columns(6)
+                    with c1:
+                        st.write(f"🎯 **{goal}**")
+                    with c2:
+                        st.write("-")
+                    with c3:
+                        st.write("-")
+                    with c4:
+                        st.write("-")
+                    with c5:
+                        st.write("-")
+                    with c6:
+                        st.write("-")
+
+            st.write("---")
+            # Next বাটন (৬ নম্বর ট্যাবে যাওয়ার জন্য)
             if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
-                # ডেটা সেভ করা হচ্ছে
+                # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                 st.session_state.location = location
                 st.session_state.current_lifestyle_level = lvl
                 st.session_state.current_lifestyle_status = style_status
                 st.session_state.lifestyle_change_choice = lifestyle_change
+                st.session_state.final_goals_list = final_goals_list
                 
-                st.success("Lifestyle projection saved! Moving to Final Goals...")
+                st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
 
         else:
             st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
-
-
 
 
 
