@@ -585,103 +585,179 @@ elif st.session_state.page == 'main_form':
             st.write("---")
 
             # ==============================================================
-            # ৭. Customized Goal List & Table (Upgrade/Downgrade এর পরে)
+            # ৭. Customized Goal List & Table 
             # ==============================================================
             st.markdown("### 🎯 Customized Goal List")
             final_goals_list = []
 
             # ----------------------------------------------------
-            # 1st Case: অবিবাহিত (Married = "NO") হলে
+            # CASE 1: অবিবাহিত (Married = "NO") হলে
             # ----------------------------------------------------
             if st.session_state.get('married') == 'NO':
                 st.info("Since you are unmarried, here is your customized recommended goal list:")
                 
-                # --- A. Basic Recommended Goals ---
+                # --- A. Basic Recommended Goals (Unmarried) ---
                 st.markdown("#### 📌 Recommended Goals")
                 st.write("*(These are selected by default. You can untick any goal if you don't want it.)*")
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    g_retire = st.checkbox("Retirement Fund", value=True, key="g_retire")
-                    g_insure = st.checkbox("Insurance Fund", value=True, key="g_insure")
-                    g_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="g_emerg")
+                    g_retire = st.checkbox("Retirement Fund", value=True, key="u_retire")
+                    g_insure = st.checkbox("Insurance Fund", value=True, key="u_insure")
+                    g_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="u_emerg")
                     
                 with col2:
-                    g_marriage = st.checkbox("Marriage", value=True, key="g_marriage")
-                    g_vacation = st.checkbox("Vacation", value=True, key="g_vacation")
-                    g_child_plan = st.checkbox("Child Planning", value=True, key="g_child_plan")
+                    g_marriage = st.checkbox("Marriage", value=True, key="u_marriage")
+                    g_vacation = st.checkbox("Vacation", value=True, key="u_vacation")
+                    g_child_plan = st.checkbox("Child Planning", value=True, key="u_child_plan")
                     
                     num_planned_child = 0
-                    child_goals_status = {} # ডায়নামিক গোলগুলোর টিক/আনটিক স্ট্যাটাস সেভ রাখার জন্য
+                    child_goals_status = {}
                     
-                    # চাইল্ড প্ল্যানিং টিক করা থাকলে কোয়ান্টিটি ইনপুট দেখাবে
                     if g_child_plan:
-                        num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=1, step=1, key="plan_child_qty")
-                        
-                        # ডায়নামিকভাবে চেকবক্স তৈরি করা (যতগুলো বাচ্চা, ততগুলো এডুকেশন ও ম্যারেজ)
+                        num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=1, step=1, key="u_plan_child_qty")
                         for i in range(1, num_planned_child + 1):
                             st.markdown(f"**🔹 For Child {i}:**")
-                            child_goals_status[f"c{i}_edu"] = st.checkbox(f"Child {i} Education", value=True, key=f"chk_c{i}_edu")
-                            child_goals_status[f"c{i}_mar"] = st.checkbox(f"Child {i} Marriage", value=True, key=f"chk_c{i}_mar")
+                            child_goals_status[f"c{i}_edu"] = st.checkbox(f"Child {i} Education", value=True, key=f"u_chk_c{i}_edu")
+                            child_goals_status[f"c{i}_mar"] = st.checkbox(f"Child {i} Marriage", value=True, key=f"u_chk_c{i}_mar")
 
                 st.write("---")
                 
-                # --- B. Additional Goals ---
+                # --- B. Additional Goals (Unmarried) ---
                 st.markdown("#### ➕ Additional Goals")
                 st.write("*(Tick to add a goal, and adjust the quantity using + / -)*")
                 
                 additional_goals = ["House", "Car", "World Tour", "Lavish Accessories", "Business Set up fund", "Gadgets"]
                 selected_additional_goals = {}
                 
-                # ৩টি কলামে সুন্দর করে সাজানোর জন্য
                 add_cols = st.columns(3)
                 for idx, goal_name in enumerate(additional_goals):
                     col = add_cols[idx % 3]
                     with col:
-                        # বাই ডিফল্ট untick করা থাকবে (value=False)
-                        is_checked = st.checkbox(goal_name, value=False, key=f"chk_{goal_name}")
+                        is_checked = st.checkbox(goal_name, value=False, key=f"u_chk_{goal_name}")
                         if is_checked:
-                            # টিক দিলে কোয়ান্টিটি ইনপুট দেখাবে (ডিফল্ট 1)
-                            qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"qty_{goal_name}")
+                            qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"u_qty_{goal_name}")
                             selected_additional_goals[goal_name] = qty
 
-                # --- C. Final Goal List Preparation ---
+                # --- C. Final List Prep (Unmarried) ---
                 if g_retire: final_goals_list.append("Retirement Fund")
                 if g_insure: final_goals_list.append("Insurance Fund")
                 if g_emerg: final_goals_list.append("Contingency/Emergency Fund")
                 if g_marriage: final_goals_list.append("Marriage")
                 if g_vacation: final_goals_list.append("Vacation")
                 
-                # নতুন লজিক: চাইল্ড প্ল্যানিং অনুযায়ী শুধু টিক করা গোলগুলোই যুক্ত হবে
                 if g_child_plan and num_planned_child > 0:
                     for i in range(1, num_planned_child + 1):
-                        if child_goals_status[f"c{i}_edu"]:
-                            final_goals_list.append(f"Child {i} Education")
-                        if child_goals_status[f"c{i}_mar"]:
-                            final_goals_list.append(f"Child {i} Marriage")
+                        if child_goals_status[f"c{i}_edu"]: final_goals_list.append(f"Child {i} Education")
+                        if child_goals_status[f"c{i}_mar"]: final_goals_list.append(f"Child {i} Marriage")
                 
-                # Additional Goals যুক্ত করা (Quantity অনুযায়ী)
                 for goal, qty in selected_additional_goals.items():
-                    if qty == 1:
-                        final_goals_list.append(goal)
+                    if qty == 1: final_goals_list.append(goal)
                     else:
-                        for i in range(1, qty + 1):
-                            final_goals_list.append(f"{goal} {i}")
+                        for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
             
             # ----------------------------------------------------
-            # 2nd Case: বিবাহিত (Married = "YES") হলে (পরবর্তী কাজের জন্য ফাঁকা)
+            # CASE 2: বিবাহিত (Married = "YES") হলে
             # ----------------------------------------------------
             elif st.session_state.get('married') == 'YES':
-                st.info("Goal list for married clients will go here (Pending...)")
+                st.info("Since you are married, here is your customized recommended goal list:")
+                
+                st.markdown("#### 📌 Recommended Goals")
+                st.write("*(These are selected by default. You can untick any goal if you don't want it.)*")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    m_retire = st.checkbox("Retirement Fund", value=True, key="m_retire")
+                    m_insure = st.checkbox("Insurance Fund", value=True, key="m_insure")
+                    m_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="m_emerg")
+                
+                with col2:
+                    m_vacation = st.checkbox("Vacation", value=True, key="m_vacation")
+                    
+                    # যদি বাচ্চা না থাকে, তবে Child Planning রেকমেন্ডেড গোলেই থাকবে
+                    has_child = st.session_state.get('child') == 'YES'
+                    m_child_plan = False
+                    num_planned_child = 0
+                    planned_child_status = {}
+                    
+                    if not has_child:
+                        m_child_plan = st.checkbox("Child Planning", value=True, key="m_child_plan")
+                        if m_child_plan:
+                            num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=1, step=1, key="m_plan_child_qty")
+                            for i in range(1, num_planned_child + 1):
+                                st.markdown(f"**🔹 For Future Child {i}:**")
+                                planned_child_status[f"fc{i}_edu"] = st.checkbox(f"Future Child {i} Education", value=True, key=f"m_chk_fc{i}_edu")
+                                planned_child_status[f"fc{i}_mar"] = st.checkbox(f"Future Child {i} Marriage", value=True, key=f"m_chk_fc{i}_mar")
+
+                # --- আগে থেকে বাচ্চা থাকলে তাদের নাম দিয়ে গোল তৈরি ---
+                existing_child_status = {}
+                if has_child:
+                    st.write("---")
+                    st.markdown("#### 👶 Existing Children Goals")
+                    kids = st.session_state.get('children_data', [])
+                    for i, kid in enumerate(kids):
+                        kid_name = kid['Name'] if kid['Name'] else f"Child {i+1}"
+                        st.markdown(f"**🔹 For {kid_name}:**")
+                        existing_child_status[f"{kid_name}_edu"] = st.checkbox(f"Education Expense for {kid_name}", value=True, key=f"m_chk_ex_{i}_edu")
+                        existing_child_status[f"{kid_name}_mar"] = st.checkbox(f"Marriage Expense for {kid_name}", value=True, key=f"m_chk_ex_{i}_mar")
+                
+                st.write("---")
+                # --- B. Additional Goals (Married) ---
+                st.markdown("#### ➕ Additional Goals")
+                
+                additional_goals = ["House", "Car", "World Tour", "Lavish Accessories", "Business Set up fund", "Gadgets"]
+                
+                # যদি আগে থেকেই বাচ্চা থাকে, তবে Child Planning এখানে যুক্ত হবে (আরও বাচ্চার জন্য)
+                if has_child:
+                    additional_goals.insert(0, "Additional Child Planning")
+                    
+                selected_additional_goals = {}
+                add_cols = st.columns(3)
+                for idx, goal_name in enumerate(additional_goals):
+                    col = add_cols[idx % 3]
+                    with col:
+                        is_checked = st.checkbox(goal_name, value=False, key=f"m_add_{idx}")
+                        if is_checked:
+                            qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"m_qty_{idx}")
+                            selected_additional_goals[goal_name] = qty
+
+                # --- C. Final List Prep (Married) ---
+                if m_retire: final_goals_list.append("Retirement Fund")
+                if m_insure: final_goals_list.append("Insurance Fund")
+                if m_emerg: final_goals_list.append("Contingency/Emergency Fund")
+                if m_vacation: final_goals_list.append("Vacation")
+                
+                # Future Child (যাদের বাচ্চা নেই)
+                if not has_child and m_child_plan and num_planned_child > 0:
+                    for i in range(1, num_planned_child + 1):
+                        if planned_child_status[f"fc{i}_edu"]: final_goals_list.append(f"Future Child {i} Education")
+                        if planned_child_status[f"fc{i}_mar"]: final_goals_list.append(f"Future Child {i} Marriage")
+                
+                # Existing Children (যাদের আগে থেকেই বাচ্চা আছে)
+                if has_child:
+                    for i, kid in enumerate(st.session_state.get('children_data', [])):
+                        kid_name = kid['Name'] if kid['Name'] else f"Child {i+1}"
+                        if existing_child_status[f"{kid_name}_edu"]: final_goals_list.append(f"Education Expense for {kid_name}")
+                        if existing_child_status[f"{kid_name}_mar"]: final_goals_list.append(f"Marriage Expense for {kid_name}")
+                
+                # Additional Goals
+                for goal, qty in selected_additional_goals.items():
+                    if goal == "Additional Child Planning":
+                        for i in range(1, qty + 1):
+                            final_goals_list.append(f"Additional Child {i} Education")
+                            final_goals_list.append(f"Additional Child {i} Marriage")
+                    elif qty == 1: 
+                        final_goals_list.append(goal)
+                    else:
+                        for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
             # ==============================================================
-            # ৮. ৬-কলামের টেবিল তৈরি (Final Goals List এর উপর ভিত্তি করে)
+            # ৮. ৬-কলামের টেবিল তৈরি 
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
                 st.markdown("### 📋 Your Customized Goal Table")
                 
-                # টেবিলের হেডার (৬টি কলাম)
                 h1, h2, h3, h4, h5, h6 = st.columns(6)
                 h1.markdown("**Goal Name**")
                 h2.markdown("**Col 2**")
@@ -689,33 +765,27 @@ elif st.session_state.page == 'main_form':
                 h4.markdown("**Col 4**")
                 h5.markdown("**Col 5**")
                 h6.markdown("**Col 6**")
-                
                 st.markdown("---")
                 
-                # যতগুলো গোল, ঠিক ততগুলো সারি (Row) তৈরি করা
                 for i, goal in enumerate(final_goals_list):
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
-                    with c1:
-                        st.write(f"🎯 **{goal}**")
-                    with c2:
-                        st.write("-")
-                    with c3:
-                        st.write("-")
-                    with c4:
-                        st.write("-")
-                    with c5:
-                        st.write("-")
-                    with c6:
-                        st.write("-")
+                    with c1: st.write(f"🎯 **{goal}**")
+                    with c2: st.write("-")
+                    with c3: st.write("-")
+                    with c4: st.write("-")
+                    with c5: st.write("-")
+                    with c6: st.write("-")
 
             st.write("---")
-            # Next বাটন (৬ নম্বর ট্যাবে যাওয়ার জন্য)
             if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
-                # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                 st.session_state.location = location
                 st.session_state.current_lifestyle_level = lvl
                 st.session_state.current_lifestyle_status = style_status
                 st.session_state.lifestyle_change_choice = lifestyle_change
                 st.session_state.final_goals_list = final_goals_list
                 
+                st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
+
+        else:
+            st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
