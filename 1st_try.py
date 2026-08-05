@@ -468,7 +468,135 @@ elif st.session_state.page == 'main_form':
         else:
             st.warning("Please complete the Child & Dependent Details tab first.")
 
+# 5th ট্যাব এর ডিজাইন (Future Expenses Projection)
+    #____________________________________
+    with tab5:
+        st.subheader("Future Expenses Projection")
 
+        # ১. লোকেশন ইনপুট
+        location = st.selectbox(
+            "Where do you live?",
+            ["Village", "Semi-village", "Small City", "City", "Megacity"],
+            index=None,
+            key="location_type"
+        )
+
+        st.write("---")
+
+        if location:
+            # ২. টোটাল মেম্বার ক্যালকুলেশন
+            user_count = 1
+            spouse_count = 1 if st.session_state.get('married') == 'YES' else 0
+            
+            # বাচ্চাদের সংখ্যা
+            child_data = st.session_state.get('children_data', [])
+            child_count = len(child_data) if st.session_state.get('child') == 'YES' else 0
+            
+            # নির্ভরশীল সদস্যদের সংখ্যা
+            dep_data = st.session_state.get('dependents_data', [])
+            dep_count = len(dep_data) if st.session_state.get('dependent') == 'YES' else 0
+
+            total_member = user_count + spouse_count + child_count + dep_count
+
+            # ৩. টোটাল এক্সপেন্স ক্যালকুলেশন
+            user_exp = st.session_state.get('expenses', 0)
+            spouse_exp = st.session_state.get('spouse_expenses', 0)
+            total_expense = user_exp + spouse_exp
+
+            # 4. Expense Per Head
+            exp_per_head = total_expense / total_member if total_member > 0 else 0
+
+            # 5. Lifestyle Status Logic (আপনার দেওয়া রেঞ্জ অনুযায়ী)
+            levels = ["Basic", "Modest", "Standard", "Comfortable", "Upper_Middle class", "Affluent", "Luxury", "Elite"]
+            lvl = 0 # ডিফল্ট ইনডেক্স
+
+            if location == "Village":
+                if exp_per_head <= 5000: lvl = 0
+                elif exp_per_head <= 10000: lvl = 1
+                elif exp_per_head <= 15000: lvl = 2
+                elif exp_per_head <= 20000: lvl = 3
+                elif exp_per_head <= 30000: lvl = 4
+                elif exp_per_head <= 50000: lvl = 5
+                elif exp_per_head <= 75000: lvl = 6
+                else: lvl = 7
+
+            elif location == "Semi-village":
+                if exp_per_head <= 8000: lvl = 0
+                elif exp_per_head <= 12000: lvl = 1
+                elif exp_per_head <= 20000: lvl = 2
+                elif exp_per_head <= 35000: lvl = 3
+                elif exp_per_head <= 50000: lvl = 4
+                elif exp_per_head <= 75000: lvl = 5
+                elif exp_per_head <= 100000: lvl = 6
+                else: lvl = 7
+
+            elif location == "Small City":
+                if exp_per_head <= 10000: lvl = 0
+                elif exp_per_head <= 15000: lvl = 1
+                elif exp_per_head <= 22000: lvl = 2
+                elif exp_per_head <= 40000: lvl = 3
+                elif exp_per_head <= 60000: lvl = 4
+                elif exp_per_head <= 100000: lvl = 5
+                elif exp_per_head <= 120000: lvl = 6
+                else: lvl = 7
+
+            elif location == "City":
+                if exp_per_head <= 12000: lvl = 0
+                elif exp_per_head <= 18000: lvl = 1
+                elif exp_per_head <= 25000: lvl = 2
+                elif exp_per_head <= 50000: lvl = 3
+                elif exp_per_head <= 80000: lvl = 4
+                elif exp_per_head <= 110000: lvl = 5
+                elif exp_per_head <= 130000: lvl = 6
+                else: lvl = 7
+
+            elif location == "Megacity":
+                if exp_per_head <= 15000: lvl = 0
+                elif exp_per_head <= 20000: lvl = 1
+                elif exp_per_head <= 22000: lvl = 2
+                elif exp_per_head <= 30000: lvl = 3
+                elif exp_per_head <= 60000: lvl = 4
+                elif exp_per_head <= 100000: lvl = 5
+                elif exp_per_head <= 150000: lvl = 6
+                else: lvl = 7
+
+            style_status = levels[lvl]
+
+            # রেজাল্ট প্রদর্শন
+            st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹{total_expense:,.2f}** | Per Head Expense: **₹{exp_per_head:,.2f}**")
+            st.success(f"As per your expenses, your default lifestyle status is: **{style_status.upper()}**")
+
+            # 6. Upgrade / Downgrade Section
+            st.write("---")
+            st.markdown("### Do you want to upgrade or downgrade your lifestyle?")
+            st.markdown("*According to your choice, your future expenses will be changed...*")
+
+            # স্মার্ট অপশন: Basic হলে ডাউনগ্রেড লুকানো থাকবে, Elite হলে আপগ্রেড লুকানো থাকবে
+            options = ["Keep Same (0)"]
+            if lvl > 0:
+                options.insert(0, "Downgrade (-1 Level)")
+            if lvl < 7:
+                options.append("Upgrade (+1 Level)")
+
+            lifestyle_change = st.radio(
+                "Select an option:",
+                options,
+                index=options.index("Keep Same (0)"),
+                key="lifestyle_change"
+            )
+
+            # Next বাটন
+            if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
+                # ডেটা সেভ করা হচ্ছে
+                st.session_state.location = location
+                st.session_state.current_lifestyle_level = lvl
+                st.session_state.current_lifestyle_status = style_status
+                st.session_state.lifestyle_change_choice = lifestyle_change
+                
+                st.success("Lifestyle projection saved! Moving to Final Goals...")
+
+        else:
+            st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
 
 
 
