@@ -475,6 +475,8 @@ elif st.session_state.page == 'main_form':
 
 # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
+    # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
+    #____________________________________
     with tab5:
         st.subheader("Future Expenses Projection")
 
@@ -584,7 +586,6 @@ elif st.session_state.page == 'main_form':
                 col1, col2 = st.columns(2)
                 with col1:
                     g_retire = st.checkbox("Retirement Fund", value=True, key="u_retire")
-                    # Insurance Fund এর বদলে Medical Emergency Fund করা হলো
                     g_med_emerg = st.checkbox("Medical Emergency Fund", value=True, key="u_med_emerg")
                     g_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="u_emerg")
                     
@@ -646,7 +647,6 @@ elif st.session_state.page == 'main_form':
                 col1, col2 = st.columns(2)
                 with col1:
                     m_retire = st.checkbox("Retirement Fund", value=True, key="m_retire")
-                    # Insurance Fund এর বদলে Medical Emergency Fund করা হলো
                     m_med_emerg = st.checkbox("Medical Emergency Fund", value=True, key="m_med_emerg")
                     m_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="m_emerg")
                 
@@ -751,11 +751,29 @@ elif st.session_state.page == 'main_form':
                         
                     with c2: 
                         default_val = 0.0
+                        
                         if goal == "Retirement Fund":
-                            default_val = (annual_expense * 0.70) / 0.075
+                            # Lifestyle Status অনুযায়ী রিটায়ারমেন্ট ফান্ডের ডায়নামিক ক্যালকুলেশন
+                            if style_status == "Basic":
+                                default_val = (annual_income * 0.40) / 0.09
+                            elif style_status == "Modest":
+                                default_val = (annual_income * 0.45) / 0.09
+                            elif style_status == "Standard":
+                                default_val = (annual_income * 0.50) / 0.09
+                            elif style_status == "Comfortable":
+                                default_val = (annual_income * 0.60) / 0.09
+                            elif style_status == "Upper_Middle class":
+                                default_val = (annual_income * 0.70) / 0.09
+                            elif style_status == "Affluent":
+                                default_val = (annual_income * 0.80) / 0.09
+                            elif style_status == "Luxury":
+                                default_val = (annual_income * 0.90) / 0.09
+                            elif style_status == "Elite":
+                                default_val = annual_income / 0.09 # (100% / 9%)
+                                
                         elif goal == "Medical Emergency Fund":
-                            # আপনার নতুন লজিক: Total Annual Expense * 5
                             default_val = float(annual_expense * 5)
+                            
                         elif goal == "Contingency/Emergency Fund":
                             default_val = float(annual_income * 3)
                         
@@ -765,7 +783,7 @@ elif st.session_state.page == 'main_form':
                             min_value=0.0, 
                             step=1000.0, 
                             format="%0.2f", 
-                            key=f"pv_{i}",
+                            key=f"pv_{goal}", 
                             label_visibility="collapsed"
                         )
                         goal_present_values[goal] = pv_value
