@@ -476,6 +476,19 @@ elif st.session_state.page == 'main_form':
 # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
     with tab5:
+        # --- Helper Function for Indian Currency Formatting ---
+        def format_indian_currency(num):
+            num = float(num)
+            is_negative = num < 0
+            num = abs(num)
+            s, *d = str(f"{num:.2f}").partition(".")
+            if len(s) > 3:
+                r = ",".join([s[x-2:x] for x in range(-3, -len(s), -2)][::-1] + [s[-3:]])
+            else:
+                r = s
+            formatted_num = "".join([r] + d)
+            return f"-{formatted_num}" if is_negative else formatted_num
+
         st.subheader("Future Expenses Projection")
 
         # ১. লোকেশন ইনপুট
@@ -561,7 +574,8 @@ elif st.session_state.page == 'main_form':
 
             style_status = levels[lvl]
 
-            st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹{total_expense:,.2f}** | Per Head Expense: **₹{exp_per_head:,.2f}**")
+            # এখানেও আমরা ইন্ডিয়ান ফরম্যাট ফাংশনটি ব্যবহার করেছি
+            st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹ {format_indian_currency(total_expense)}** | Per Head Expense: **₹ {format_indian_currency(exp_per_head)}**")
             st.success(f"As per your expenses, your default lifestyle status is: **{style_status.upper()}**")
 
             st.write("---")
@@ -722,8 +736,8 @@ elif st.session_state.page == 'main_form':
                     else:
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
-           # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি (Present Value সহ)
+            # ==============================================================
+            # ৭. ৬-কলামের টেবিল তৈরি (Present Value এবং Indian Comma সহ)
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
@@ -732,19 +746,18 @@ elif st.session_state.page == 'main_form':
                 # --- Col 2 এর ডিফল্ট ভ্যালু ক্যালকুলেশনের জন্য আয় এবং খরচ ---
                 total_monthly_income = st.session_state.get('income', 0) + st.session_state.get('spouse_income', 0)
                 annual_income = total_monthly_income * 12
-                annual_expense = total_expense * 12  # total_expense উপরে আগেই ক্যালকুলেট করা আছে
+                annual_expense = total_expense * 12 
                 
                 # টেবিলের হেডার
                 h1, h2, h3, h4, h5, h6 = st.columns(6)
                 h1.markdown("**Goal Name**")
-                h2.markdown("**Present Value (₹)**") # Col 2 এর নাম দিলাম
+                h2.markdown("**Present Value (₹)**")
                 h3.markdown("**Col 3**")
                 h4.markdown("**Col 4**")
                 h5.markdown("**Col 5**")
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
-                # ইউজারের এডিট করা ভ্যালুগুলো সেভ রাখার জন্য
                 goal_present_values = {}
                 
                 for i, goal in enumerate(final_goals_list):
@@ -754,29 +767,24 @@ elif st.session_state.page == 'main_form':
                         st.write(f"🎯 **{goal}**")
                         
                     with c2: 
-                        # আপনার দেওয়া লজিক অনুযায়ী ডিফল্ট ভ্যালু সেট করা
                         default_val = 0.0
-                        
                         if goal == "Retirement Fund":
-                            # (total expense * 70%) / 7.5% 
                             default_val = (annual_expense * 0.70) / 0.075
                         elif goal == "Insurance Fund":
-                            # anual income * 15
                             default_val = float(annual_income * 15)
                         elif goal == "Contingency/Emergency Fund":
-                            # anual income * 3
                             default_val = float(annual_income * 3)
                         
-                        # number_input দেওয়া হলো যাতে ক্লায়েন্ট ভ্যালু দেখতে ও এডিট করতে পারে
                         pv_value = st.number_input(
-                            f"PV for {goal}", # লেবেল
+                            f"PV for {goal}",
                             value=float(default_val), 
                             min_value=0.0, 
                             step=1000.0, 
                             key=f"pv_{i}",
-                            label_visibility="collapsed" # টেবিলের সুন্দর লুকের জন্য লেবেল হাইড করা হয়েছে
+                            label_visibility="collapsed"
                         )
-                        # এডিট করা ভ্যালুটি ডিকশনারিতে সেভ করে রাখা হচ্ছে
+                        # ইনপুট বক্সের ঠিক নিচে ইন্ডিয়ান স্টাইলে কমা বসিয়ে দেখানো হচ্ছে
+                        st.caption(f"**₹ {format_indian_currency(pv_value)}**")
                         goal_present_values[goal] = pv_value
                         
                     with c3: st.write("-")
@@ -785,7 +793,7 @@ elif st.session_state.page == 'main_form':
                     with c6: st.write("-")
 
             # ==============================================================
-            # ৮. Upgrade / Downgrade Section (টেবিলের পরে)
+            # ৮. Upgrade / Downgrade Section
             # ==============================================================
             st.write("---")
             st.markdown("### Do you want to upgrade or downgrade your lifestyle?")
@@ -810,13 +818,12 @@ elif st.session_state.page == 'main_form':
             # Next বাটন
             # ----------------------------------------------------
             if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
-                # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                 st.session_state.location = location
                 st.session_state.current_lifestyle_level = lvl
                 st.session_state.current_lifestyle_status = style_status
                 st.session_state.lifestyle_change_choice = lifestyle_change
                 st.session_state.final_goals_list = final_goals_list
-                st.session_state.goal_present_values = goal_present_values # নতুন ডেটা মেমোরিতে সেভ হলো
+                st.session_state.goal_present_values = goal_present_values
                 
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
 
