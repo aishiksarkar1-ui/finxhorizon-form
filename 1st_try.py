@@ -777,7 +777,9 @@ elif st.session_state.page == 'main_form':
                     with c6: st.write("-")
 
             st.write("---")
+            # Next বাটন (৬ নম্বর ট্যাবে যাওয়ার জন্য)
             if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
+                # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                 st.session_state.location = location
                 st.session_state.current_lifestyle_level = lvl
                 st.session_state.current_lifestyle_status = style_status
@@ -788,4 +790,3 @@ elif st.session_state.page == 'main_form':
 
         else:
             st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
-                st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
