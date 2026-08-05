@@ -722,33 +722,70 @@ elif st.session_state.page == 'main_form':
                     else:
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
-            # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি 
+           # ==============================================================
+            # ৭. ৬-কলামের টেবিল তৈরি (Present Value সহ)
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
                 st.markdown("### 📋 Your Customized Goal Table")
                 
+                # --- Col 2 এর ডিফল্ট ভ্যালু ক্যালকুলেশনের জন্য আয় এবং খরচ ---
+                total_monthly_income = st.session_state.get('income', 0) + st.session_state.get('spouse_income', 0)
+                annual_income = total_monthly_income * 12
+                annual_expense = total_expense * 12  # total_expense উপরে আগেই ক্যালকুলেট করা আছে
+                
+                # টেবিলের হেডার
                 h1, h2, h3, h4, h5, h6 = st.columns(6)
                 h1.markdown("**Goal Name**")
-                h2.markdown("**Col 2**")
+                h2.markdown("**Present Value (₹)**") # Col 2 এর নাম দিলাম
                 h3.markdown("**Col 3**")
                 h4.markdown("**Col 4**")
                 h5.markdown("**Col 5**")
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
+                # ইউজারের এডিট করা ভ্যালুগুলো সেভ রাখার জন্য
+                goal_present_values = {}
+                
                 for i, goal in enumerate(final_goals_list):
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
-                    with c1: st.write(f"🎯 **{goal}**")
-                    with c2: st.write("-")
+                    
+                    with c1: 
+                        st.write(f"🎯 **{goal}**")
+                        
+                    with c2: 
+                        # আপনার দেওয়া লজিক অনুযায়ী ডিফল্ট ভ্যালু সেট করা
+                        default_val = 0.0
+                        
+                        if goal == "Retirement Fund":
+                            # (total expense * 70%) / 7.5% 
+                            default_val = (annual_expense * 0.70) / 0.075
+                        elif goal == "Insurance Fund":
+                            # anual income * 15
+                            default_val = float(annual_income * 15)
+                        elif goal == "Contingency/Emergency Fund":
+                            # anual income * 3
+                            default_val = float(annual_income * 3)
+                        
+                        # number_input দেওয়া হলো যাতে ক্লায়েন্ট ভ্যালু দেখতে ও এডিট করতে পারে
+                        pv_value = st.number_input(
+                            f"PV for {goal}", # লেবেল
+                            value=float(default_val), 
+                            min_value=0.0, 
+                            step=1000.0, 
+                            key=f"pv_{i}",
+                            label_visibility="collapsed" # টেবিলের সুন্দর লুকের জন্য লেবেল হাইড করা হয়েছে
+                        )
+                        # এডিট করা ভ্যালুটি ডিকশনারিতে সেভ করে রাখা হচ্ছে
+                        goal_present_values[goal] = pv_value
+                        
                     with c3: st.write("-")
                     with c4: st.write("-")
                     with c5: st.write("-")
                     with c6: st.write("-")
 
             # ==============================================================
-            # ৮. Upgrade / Downgrade Section (টেবিলের পরে বসানো হলো)
+            # ৮. Upgrade / Downgrade Section (টেবিলের পরে)
             # ==============================================================
             st.write("---")
             st.markdown("### Do you want to upgrade or downgrade your lifestyle?")
@@ -773,11 +810,13 @@ elif st.session_state.page == 'main_form':
             # Next বাটন
             # ----------------------------------------------------
             if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
+                # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                 st.session_state.location = location
                 st.session_state.current_lifestyle_level = lvl
                 st.session_state.current_lifestyle_status = style_status
                 st.session_state.lifestyle_change_choice = lifestyle_change
                 st.session_state.final_goals_list = final_goals_list
+                st.session_state.goal_present_values = goal_present_values # নতুন ডেটা মেমোরিতে সেভ হলো
                 
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
 
