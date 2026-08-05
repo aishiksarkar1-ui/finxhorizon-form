@@ -564,28 +564,10 @@ elif st.session_state.page == 'main_form':
             st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹{total_expense:,.2f}** | Per Head Expense: **₹{exp_per_head:,.2f}**")
             st.success(f"As per your expenses, your default lifestyle status is: **{style_status.upper()}**")
 
-            # 6. Upgrade / Downgrade Section
-            st.write("---")
-            st.markdown("### Do you want to upgrade or downgrade your lifestyle?")
-            st.markdown("*According to your choice, your future expenses will be changed...*")
-
-            options = ["Keep Same (0)"]
-            if lvl > 0:
-                options.insert(0, "Downgrade (-1 Level)")
-            if lvl < 7:
-                options.append("Upgrade (+1 Level)")
-
-            lifestyle_change = st.radio(
-                "Select an option:",
-                options,
-                index=options.index("Keep Same (0)"),
-                key="lifestyle_change"
-            )
-
             st.write("---")
 
             # ==============================================================
-            # ৭. Customized Goal List & Table 
+            # ৬. Customized Goal List 
             # ==============================================================
             st.markdown("### 🎯 Customized Goal List")
             final_goals_list = []
@@ -596,7 +578,6 @@ elif st.session_state.page == 'main_form':
             if st.session_state.get('married') == 'NO':
                 st.info("Since you are unmarried, here is your customized recommended goal list:")
                 
-                # --- A. Basic Recommended Goals (Unmarried) ---
                 st.markdown("#### 📌 Recommended Goals")
                 st.write("*(These are selected by default. You can untick any goal if you don't want it.)*")
                 
@@ -623,7 +604,6 @@ elif st.session_state.page == 'main_form':
 
                 st.write("---")
                 
-                # --- B. Additional Goals (Unmarried) ---
                 st.markdown("#### ➕ Additional Goals")
                 st.write("*(Tick to add a goal, and adjust the quantity using + / -)*")
                 
@@ -639,7 +619,6 @@ elif st.session_state.page == 'main_form':
                             qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"u_qty_{goal_name}")
                             selected_additional_goals[goal_name] = qty
 
-                # --- C. Final List Prep (Unmarried) ---
                 if g_retire: final_goals_list.append("Retirement Fund")
                 if g_insure: final_goals_list.append("Insurance Fund")
                 if g_emerg: final_goals_list.append("Contingency/Emergency Fund")
@@ -674,7 +653,6 @@ elif st.session_state.page == 'main_form':
                 with col2:
                     m_vacation = st.checkbox("Vacation", value=True, key="m_vacation")
                     
-                    # যদি বাচ্চা না থাকে, তবে Child Planning রেকমেন্ডেড গোলেই থাকবে
                     has_child = st.session_state.get('child') == 'YES'
                     m_child_plan = False
                     num_planned_child = 0
@@ -689,7 +667,6 @@ elif st.session_state.page == 'main_form':
                                 planned_child_status[f"fc{i}_edu"] = st.checkbox(f"Future Child {i} Education", value=True, key=f"m_chk_fc{i}_edu")
                                 planned_child_status[f"fc{i}_mar"] = st.checkbox(f"Future Child {i} Marriage", value=True, key=f"m_chk_fc{i}_mar")
 
-                # --- আগে থেকে বাচ্চা থাকলে তাদের নাম দিয়ে গোল তৈরি ---
                 existing_child_status = {}
                 if has_child:
                     st.write("---")
@@ -702,12 +679,10 @@ elif st.session_state.page == 'main_form':
                         existing_child_status[f"{kid_name}_mar"] = st.checkbox(f"Marriage Expense for {kid_name}", value=True, key=f"m_chk_ex_{i}_mar")
                 
                 st.write("---")
-                # --- B. Additional Goals (Married) ---
                 st.markdown("#### ➕ Additional Goals")
                 
                 additional_goals = ["House", "Car", "World Tour", "Lavish Accessories", "Business Set up fund", "Gadgets"]
                 
-                # যদি আগে থেকেই বাচ্চা থাকে, তবে Child Planning এখানে যুক্ত হবে (আরও বাচ্চার জন্য)
                 if has_child:
                     additional_goals.insert(0, "Additional Child Planning")
                     
@@ -721,26 +696,22 @@ elif st.session_state.page == 'main_form':
                             qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"m_qty_{idx}")
                             selected_additional_goals[goal_name] = qty
 
-                # --- C. Final List Prep (Married) ---
                 if m_retire: final_goals_list.append("Retirement Fund")
                 if m_insure: final_goals_list.append("Insurance Fund")
                 if m_emerg: final_goals_list.append("Contingency/Emergency Fund")
                 if m_vacation: final_goals_list.append("Vacation")
                 
-                # Future Child (যাদের বাচ্চা নেই)
                 if not has_child and m_child_plan and num_planned_child > 0:
                     for i in range(1, num_planned_child + 1):
                         if planned_child_status[f"fc{i}_edu"]: final_goals_list.append(f"Future Child {i} Education")
                         if planned_child_status[f"fc{i}_mar"]: final_goals_list.append(f"Future Child {i} Marriage")
                 
-                # Existing Children (যাদের আগে থেকেই বাচ্চা আছে)
                 if has_child:
                     for i, kid in enumerate(st.session_state.get('children_data', [])):
                         kid_name = kid['Name'] if kid['Name'] else f"Child {i+1}"
                         if existing_child_status[f"{kid_name}_edu"]: final_goals_list.append(f"Education Expense for {kid_name}")
                         if existing_child_status[f"{kid_name}_mar"]: final_goals_list.append(f"Marriage Expense for {kid_name}")
                 
-                # Additional Goals
                 for goal, qty in selected_additional_goals.items():
                     if goal == "Additional Child Planning":
                         for i in range(1, qty + 1):
@@ -752,7 +723,7 @@ elif st.session_state.page == 'main_form':
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
             # ==============================================================
-            # ৮. ৬-কলামের টেবিল তৈরি 
+            # ৭. ৬-কলামের টেবিল তৈরি 
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
@@ -776,10 +747,32 @@ elif st.session_state.page == 'main_form':
                     with c5: st.write("-")
                     with c6: st.write("-")
 
+            # ==============================================================
+            # ৮. Upgrade / Downgrade Section (টেবিলের পরে বসানো হলো)
+            # ==============================================================
             st.write("---")
-            # Next বাটন (৬ নম্বর ট্যাবে যাওয়ার জন্য)
+            st.markdown("### Do you want to upgrade or downgrade your lifestyle?")
+            st.markdown("*According to your choice, your future expenses will be changed...*")
+
+            options = ["Keep Same (0)"]
+            if lvl > 0:
+                options.insert(0, "Downgrade (-1 Level)")
+            if lvl < 7:
+                options.append("Upgrade (+1 Level)")
+
+            lifestyle_change = st.radio(
+                "Select an option:",
+                options,
+                index=options.index("Keep Same (0)"),
+                key="lifestyle_change"
+            )
+
+            st.write("---")
+            
+            # ----------------------------------------------------
+            # Next বাটন
+            # ----------------------------------------------------
             if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
-                # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
                 st.session_state.location = location
                 st.session_state.current_lifestyle_level = lvl
                 st.session_state.current_lifestyle_status = style_status
