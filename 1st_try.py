@@ -227,7 +227,7 @@ elif st.session_state.page == 'main_form':
         
         # যদি বিবাহিত হয়
         if st.session_state.get('married') == 'YES':
-            st.info("Information of spouse")
+           
 
             # নাম ইনপুট
             spouse_name = st.text_input("Kindly mention your spouse name:", key="sp_name")
