@@ -475,8 +475,6 @@ elif st.session_state.page == 'main_form':
 
 # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
-    # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
-    #____________________________________
     with tab5:
         st.subheader("Future Expenses Projection")
 
@@ -776,6 +774,25 @@ elif st.session_state.page == 'main_form':
                             
                         elif goal == "Contingency/Emergency Fund":
                             default_val = float(annual_income * 3)
+                            
+                        elif "Education" in goal:
+                            # Lifestyle Status অনুযায়ী Child Education এর Present Value (Current Cost)
+                            if style_status == "Basic":
+                                default_val = 500000.0      # ৫ লাখ
+                            elif style_status == "Modest":
+                                default_val = 1000000.0     # ১০ লাখ
+                            elif style_status == "Standard":
+                                default_val = 1500000.0     # ১৫ লাখ
+                            elif style_status == "Comfortable":
+                                default_val = 2500000.0     # ২৫ লাখ
+                            elif style_status == "Upper_Middle class":
+                                default_val = 4000000.0     # ৪০ লাখ
+                            elif style_status == "Affluent":
+                                default_val = 6500000.0     # ৬৫ লাখ
+                            elif style_status == "Luxury":
+                                default_val = 10000000.0    # ১ কোটি
+                            elif style_status == "Elite":
+                                default_val = 20000000.0    # ২ কোটি
                         
                         pv_value = st.number_input(
                             f"PV for {goal}",
