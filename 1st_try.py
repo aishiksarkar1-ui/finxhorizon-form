@@ -472,7 +472,6 @@ elif st.session_state.page == 'main_form':
 
 
 
-
 # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
     with tab5:
@@ -746,7 +745,7 @@ elif st.session_state.page == 'main_form':
                 st.markdown("---")
                 
                 # ডেটা সেভ রাখার জন্য ডিকশনারি
-                goal_custom_names = {} # ক্লায়েন্টের দেওয়া কাস্টম নাম সেভ রাখার জন্য
+                goal_custom_names = {} 
                 goal_present_values = {}
                 goal_durations = {} 
                 goal_inflations = {} 
@@ -892,18 +891,22 @@ elif st.session_state.page == 'main_form':
                             st.markdown(f"<div style='font-size:12px; color:#007BFF; font-weight:bold; margin-top:5px; margin-bottom:10px;'>Pension: ₹ {future_pension:,.2f} /mo</div>", unsafe_allow_html=True)
 
                     # ------------------------------------------
-                    # Column 1 (Editable Goal Name) Update
+                    # Column 1 (Goal Name Logic Update)
                     # ------------------------------------------
                     with c1: 
-                        # ক্লায়েন্ট যাতে নিজের মতো নাম দিতে পারে তার জন্য text_input
-                        custom_name = st.text_input(
-                            f"Name for {goal}",
-                            value=goal,
-                            key=f"custom_name_{goal}",
-                            label_visibility="collapsed"
-                        )
-                        # ইউজারের দেওয়া নতুন নামটা ডিকশনারিতে সেভ করা হলো
-                        goal_custom_names[goal] = custom_name
+                        # শুধুমাত্র Gadget হলে এডিট করার অপশন (text_input) আসবে
+                        if "Gadget" in goal:
+                            custom_name = st.text_input(
+                                f"Name for {goal}",
+                                value=goal,
+                                key=f"custom_name_{goal}",
+                                label_visibility="collapsed"
+                            )
+                            goal_custom_names[goal] = custom_name
+                        else:
+                            # বাকি সব ক্ষেত্রে ফিক্সড টেক্সট দেখাবে
+                            st.write(f"🎯 **{goal}**")
+                            goal_custom_names[goal] = goal # অরিজিনাল নামটাই ডিকশনারিতে সেভ থাকবে
                         
                     with c6: st.write("-")
 
@@ -938,7 +941,7 @@ elif st.session_state.page == 'main_form':
                 st.session_state.current_lifestyle_status = style_status
                 st.session_state.lifestyle_change_choice = lifestyle_change
                 st.session_state.final_goals_list = final_goals_list
-                st.session_state.goal_custom_names = goal_custom_names # কাস্টম নাম সেভ করা হলো
+                st.session_state.goal_custom_names = goal_custom_names
                 st.session_state.goal_present_values = goal_present_values
                 st.session_state.goal_durations = goal_durations
                 st.session_state.goal_inflations = goal_inflations 
@@ -948,4 +951,3 @@ elif st.session_state.page == 'main_form':
 
         else:
             st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
-
