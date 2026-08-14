@@ -917,3 +917,19 @@ elif st.session_state.page == 'main_form':
 
 
 
+# ==========================================
+# PAGE 3: Timeline & Final Calculation
+# ==========================================
+elif st.session_state.page == 'timeline_page':
+    
+    # ব্যাক বাটনটি একদম উপরে রাখা হলো
+    if st.button("⬅️ Back to Form"):
+        st.session_state.page = 'main_form'
+        st.rerun()
+        
+    st.title("⏳ Your Financial Timeline")
+    st.write("---")
+    
+    st.markdown("### Based on your age and goals, here is your timeline:")
+    
+    # (এখানে আমরা টাইমলাইনের আসল লজিক বসাবো)
