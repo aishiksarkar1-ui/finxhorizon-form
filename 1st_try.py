@@ -865,7 +865,7 @@ elif st.session_state.page == 'main_form':
                         fv_value = pv_value * ((1 + (inf_value / 100)) ** dur_value)
                         goal_future_values[goal] = fv_value
                         
-                        # Disabled text_input এর বদলে HTML/CSS দিয়ে হুবহু বক্সের মতো বানানো হলো
+                        # HTML/CSS দিয়ে রিড-অনলি বক্স
                         st.markdown(
                             f"""
                             <div style='background-color: #f3f4f6; border: 1px solid #d1d5db; 
@@ -884,8 +884,19 @@ elif st.session_state.page == 'main_form':
                     with c1: 
                         st.write(f"🎯 **{goal}**")
                         if goal == "Retirement Fund":
-                            monthly_pension = (pv_value * 0.09) / 12
-                            st.markdown(f"<div style='font-size:12px; color:gray; margin-top:-10px;'>Pension: ₹ {monthly_pension:,.2f} /mo</div>", unsafe_allow_html=True)
+                            present_pension = (pv_value * 0.09) / 12
+                            future_pension = (fv_value * 0.09) / 12
+                            
+                            # বর্তমান এবং ভবিষ্যৎ পেনশনের দারুণ ডিজাইন
+                            st.markdown(
+                                f"""
+                                <div style='font-size:12px; color:gray; margin-top:-10px;'>
+                                    Present Pension: ₹ {present_pension:,.2f} /mo<br>
+                                    <span style='color:#007BFF; font-weight:bold;'>Future Pension: ₹ {future_pension:,.2f} /mo</span>
+                                </div>
+                                """, 
+                                unsafe_allow_html=True
+                            )
                         
                     with c6: st.write("-")
 
@@ -923,7 +934,7 @@ elif st.session_state.page == 'main_form':
                 st.session_state.goal_present_values = goal_present_values
                 st.session_state.goal_durations = goal_durations
                 st.session_state.goal_inflations = goal_inflations 
-                st.session_state.goal_future_values = goal_future_values
+                st.session_state.goal_future_values = goal_future_values 
                 
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
 
