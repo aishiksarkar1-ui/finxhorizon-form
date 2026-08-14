@@ -51,11 +51,11 @@ if st.session_state.page == 'welcome':
     phone = st.text_input("Phone Number:", key='phone')
     email = st.text_input("Email Address:", key='email')
 
-    # Gender Input
+    # Gender Input (Error Fixed Here)
     gender = st.radio(
         "Kindly select your gender",
         ('MALE', 'FEMALE', 'OTHER'), 
-        index=None if 'gender' not in st.session_state else ('MALE', 'FEMALE', 'OTHER').index(st.session_state.gender),
+        index=None,
         key='gender'
     )
 
@@ -96,7 +96,6 @@ if st.session_state.page == 'welcome':
                 st.error(f"Error: {e}")
         else:
             st.warning("Doya kore sokol field thikvabe puron korun!")
-
 
 # ==========================================
 # PAGE 2: Main Form (Personal Information)
