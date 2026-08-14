@@ -750,7 +750,13 @@ elif st.session_state.page == 'main_form':
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
                     
                     # ------------------------------------------
-                    # Column 2 (Present Value)
+                    # Column 1 (Goal Name)
+                    # ------------------------------------------
+                    with c1: 
+                        st.write(f"🎯 **{goal}**")
+
+                    # ------------------------------------------
+                    # Column 2 (Present Value & Present Pension)
                     # ------------------------------------------
                     with c2: 
                         default_val = 0.0
@@ -801,7 +807,12 @@ elif st.session_state.page == 'main_form':
                             label_visibility="collapsed"
                         )
                         goal_present_values[goal] = pv_value
-                        
+
+                        # PV এর ঠিক নিচে Present Pension দেখানো হলো
+                        if goal == "Retirement Fund":
+                            present_pension = (pv_value * 0.09) / 12
+                            st.markdown(f"<div style='font-size:12px; color:gray; margin-top:-10px; margin-bottom:10px;'>Pension: ₹ {present_pension:,.2f} /mo</div>", unsafe_allow_html=True)
+
                     # ------------------------------------------
                     # Column 3 (Duration)
                     # ------------------------------------------
@@ -859,13 +870,12 @@ elif st.session_state.page == 'main_form':
                         goal_inflations[goal] = inf_value
 
                     # ------------------------------------------
-                    # Column 5 (Future Value - Live Auto Update)
+                    # Column 5 (Future Value & Future Pension)
                     # ------------------------------------------
                     with c5:
                         fv_value = pv_value * ((1 + (inf_value / 100)) ** dur_value)
                         goal_future_values[goal] = fv_value
                         
-                        # HTML/CSS দিয়ে রিড-অনলি বক্স
                         st.markdown(
                             f"""
                             <div style='background-color: #f3f4f6; border: 1px solid #d1d5db; 
@@ -878,25 +888,10 @@ elif st.session_state.page == 'main_form':
                             unsafe_allow_html=True
                         )
 
-                    # ------------------------------------------
-                    # Column 1 (Goal Name & Live Pension Update)
-                    # ------------------------------------------
-                    with c1: 
-                        st.write(f"🎯 **{goal}**")
+                        # FV এর ঠিক নিচে Future Pension দেখানো হলো
                         if goal == "Retirement Fund":
-                            present_pension = (pv_value * 0.09) / 12
                             future_pension = (fv_value * 0.09) / 12
-                            
-                            # বর্তমান এবং ভবিষ্যৎ পেনশনের দারুণ ডিজাইন
-                            st.markdown(
-                                f"""
-                                <div style='font-size:12px; color:gray; margin-top:-10px;'>
-                                    Present Pension: ₹ {present_pension:,.2f} /mo<br>
-                                    <span style='color:#007BFF; font-weight:bold;'>Future Pension: ₹ {future_pension:,.2f} /mo</span>
-                                </div>
-                                """, 
-                                unsafe_allow_html=True
-                            )
+                            st.markdown(f"<div style='font-size:12px; color:#007BFF; font-weight:bold; margin-top:5px; margin-bottom:10px;'>Pension: ₹ {future_pension:,.2f} /mo</div>", unsafe_allow_html=True)
                         
                     with c6: st.write("-")
 
