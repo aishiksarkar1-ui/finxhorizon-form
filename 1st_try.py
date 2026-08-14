@@ -303,7 +303,7 @@ elif st.session_state.page == 'main_form':
     
 
 
-  # 3rd ট্যাব এর ডিজাইন
+# 3rd ট্যাব এর ডিজাইন
     #____________________________________
     with tab3:
         st.subheader("Child & Dependent Details")
@@ -311,39 +311,60 @@ elif st.session_state.page == 'main_form':
         # --- ১. বাচ্চাদের তথ্যের অংশ ---
         if st.session_state.get('child') == 'YES':
             
-            # মেমোরি থেকে বাচ্চাদের আগের সংখ্যা তুলে আনা
+            # মেমোরি থেকে বাচ্চাদের ডেটা আনা
             saved_children = st.session_state.get('children_data', [])
             default_num_child = len(saved_children) if len(saved_children) > 0 else 1
             
-            # কতজন সন্তান সেটা জানার ইনপুট
             num_children = st.number_input("How many children do you have?", min_value=1, max_value=10, step=1, value=default_num_child, key="num_child")
-            children_data = []
+            
+            # যদি ইউজারের দেওয়া সংখ্যা আগের সেভ করা সংখ্যার চেয়ে বড় হয়, তাহলে লিস্ট বড় করা
+            while len(saved_children) < num_children:
+                saved_children.append({"Name": "", "Gender": None, "Age": None})
+            # যদি ছোট হয়, তাহলে কেটে ফেলা
+            saved_children = saved_children[:num_children]
             
             st.write("---")
-            # লুপ চালিয়ে ডাইনামিক টেবিল/কলাম তৈরি করা
+            
             for i in range(num_children):
                 st.markdown(f"**Child {i+1} Details:**")
-                
-                # মেমোরি থেকে বাচ্চাদের নাম, বয়স, জেন্ডার আনা (যদি আগে থেকে সেভ থাকে)
-                c_name_def = saved_children[i].get('Name', "") if i < len(saved_children) else ""
-                c_gen_def = saved_children[i].get('Gender') if i < len(saved_children) else None
-                c_age_def = saved_children[i].get('Age') if i < len(saved_children) else None
                 
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    c_name = st.text_input("Name", value=c_name_def, key=f"c_name_{i}")
+                    saved_children[i]['Name'] = st.text_input(
+                        "Name", 
+                        value=saved_children[i].get('Name', ""), 
+                        key=f"c_name_{i}"
+                    )
                 with col2:
                     gen_options = ['MALE', 'FEMALE', 'OTHER']
+                    c_gen_def = saved_children[i].get('Gender')
                     gen_idx = gen_options.index(c_gen_def) if c_gen_def in gen_options else None
-                    c_gender = st.selectbox("Gender", gen_options, index=gen_idx, key=f"c_gender_{i}")
+                    
+                    saved_children[i]['Gender'] = st.selectbox(
+                        "Gender", 
+                        gen_options, 
+                        index=gen_idx, 
+                        key=f"c_gender_{i}"
+                    )
                 with col3:
                     age_options = [None] + list(range(0, 51))
+                    c_age_def = saved_children[i].get('Age')
                     age_idx = age_options.index(c_age_def) if c_age_def in age_options else 0
-                    c_age = st.selectbox("Age", age_options, index=age_idx, format_func=lambda x: "Select age" if x is None else f"{x} Years", key=f"c_age_{i}")
+                    
+                    saved_children[i]['Age'] = st.selectbox(
+                        "Age", 
+                        age_options, 
+                        index=age_idx, 
+                        format_func=lambda x: "Select age" if x is None else f"{x} Years", 
+                        key=f"c_age_{i}"
+                    )
                 
-                children_data.append({"Name": c_name, "Gender": c_gender, "Age": c_age})
                 st.write("")
+            
+            # লুপের বাইরে এসে সেশন স্টেটে আপডেট করা
+            st.session_state.children_data = saved_children
+            children_data = saved_children
                 
         elif st.session_state.get('child') == 'NO':
             st.info("Since you do not have children, child details are not applicable.")
@@ -357,36 +378,38 @@ elif st.session_state.page == 'main_form':
              children_data = []
              st.warning("Please fill the Spouse Details tab first.")
 
-        # --- ২. Dependent Member এর প্রশ্ন (সবার জন্য) ---
+        # --- ২. Dependent Member এর প্রশ্ন ---
         st.write("---")
         
         dep_options = ('YES', 'NO')
         saved_dep = st.session_state.get('dependent')
         dep_idx = dep_options.index(saved_dep) if saved_dep in dep_options else None
         
+        # অন-চেঞ্জ ফাংশন দিয়ে সরাসরি সেভ
+        def update_dependent():
+            st.session_state.dependent = st.session_state.has_dependent
+            
         dependent = st.radio(
             "Do you have any member in your family who is completely dependent on your income?",
             dep_options,
             index=dep_idx,
-            key="has_dependent"
+            key="has_dependent",
+            on_change=update_dependent
         )
         
-        # --- ৩. Next বাটন এবং ডাইনামিক রুট লজিক ---
-        target_tab = "Dependent Member" if dependent == 'YES' else "Future Expenses Projection"
+        # --- ৩. Next বাটন ---
+        target_tab = "Dependent Member" if st.session_state.get('dependent') == 'YES' else "Future Expenses Projection"
         
         all_filled = True
         if st.session_state.get('child') == 'YES':
             all_filled = all(child["Name"] and child["Gender"] and child["Age"] is not None for child in children_data)
         
-        is_valid = all_filled and (dependent is not None)
+        is_valid = all_filled and (st.session_state.get('dependent') is not None)
         
         if not is_valid:
             st.warning("⚠️ Please fill in all details and answer the dependent question to enable the Next button.")
 
         if st.button("Next", key="btn_tab3_next", disabled=not is_valid, on_click=switch_tab, args=(target_tab,)):
-            if st.session_state.get('child') == 'YES':
-                st.session_state.children_data = children_data
-            st.session_state.dependent = dependent
             st.success("Details saved successfully! Moving to the next step...")
 
 
@@ -398,7 +421,6 @@ elif st.session_state.page == 'main_form':
         if st.session_state.get('dependent') == 'YES':
             st.info("Please provide the details of your dependent family members below:")
             
-            # মেমোরি থেকে Dependent-এর সংখ্যা আনা
             saved_deps = st.session_state.get('dependents_data', [])
             default_num_dep = len(saved_deps) if len(saved_deps) > 0 else 1
             
@@ -407,48 +429,71 @@ elif st.session_state.page == 'main_form':
                 min_value=1, max_value=10, step=1, value=default_num_dep, key="num_dep"
             )
             
-            dependents_data = []
+            while len(saved_deps) < num_dependents:
+                saved_deps.append({"Name": "", "Gender": None, "Age": None, "Relation": None})
+            saved_deps = saved_deps[:num_dependents]
+            
             st.write("---") 
             
             for i in range(num_dependents):
                 st.markdown(f"**Dependent Member {i+1}:**")
                 
-                # মেমোরি থেকে আগের ডেটা আনা
-                d_name_def = saved_deps[i].get('Name', "") if i < len(saved_deps) else ""
-                d_gen_def = saved_deps[i].get('Gender') if i < len(saved_deps) else None
-                d_age_def = saved_deps[i].get('Age') if i < len(saved_deps) else None
-                d_rel_def = saved_deps[i].get('Relation') if i < len(saved_deps) else None
-                
                 col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
-                    d_name = st.text_input("Name", value=d_name_def, key=f"d_name_{i}")
+                    saved_deps[i]['Name'] = st.text_input(
+                        "Name", 
+                        value=saved_deps[i].get('Name', ""), 
+                        key=f"d_name_{i}"
+                    )
                 
                 with col2:
                     d_gen_options = ['MALE', 'FEMALE', 'OTHER']
+                    d_gen_def = saved_deps[i].get('Gender')
                     d_gen_idx = d_gen_options.index(d_gen_def) if d_gen_def in d_gen_options else None
-                    d_gender = st.selectbox("Gender", d_gen_options, index=d_gen_idx, key=f"d_gender_{i}")
+                    
+                    saved_deps[i]['Gender'] = st.selectbox(
+                        "Gender", 
+                        d_gen_options, 
+                        index=d_gen_idx, 
+                        key=f"d_gender_{i}"
+                    )
                 
                 with col3:
                     d_age_options = [None] + list(range(0, 101))
+                    d_age_def = saved_deps[i].get('Age')
                     d_age_idx = d_age_options.index(d_age_def) if d_age_def in d_age_options else 0
-                    d_age = st.selectbox("Age", d_age_options, index=d_age_idx, format_func=lambda x: "Select age" if x is None else f"{x} Years", key=f"d_age_{i}")
+                    
+                    saved_deps[i]['Age'] = st.selectbox(
+                        "Age", 
+                        d_age_options, 
+                        index=d_age_idx, 
+                        format_func=lambda x: "Select age" if x is None else f"{x} Years", 
+                        key=f"d_age_{i}"
+                    )
                     
                 with col4:
                     rel_options = ['FATHER', 'MOTHER', 'BROTHER', 'SISTER', 'OTHER']
+                    d_rel_def = saved_deps[i].get('Relation')
                     rel_idx = rel_options.index(d_rel_def) if d_rel_def in rel_options else None
-                    d_relation = st.selectbox("Relation", rel_options, index=rel_idx, key=f"d_rel_{i}")
+                    
+                    saved_deps[i]['Relation'] = st.selectbox(
+                        "Relation", 
+                        rel_options, 
+                        index=rel_idx, 
+                        key=f"d_rel_{i}"
+                    )
                 
-                dependents_data.append({"Name": d_name, "Gender": d_gender, "Age": d_age, "Relation": d_relation})
                 st.write("")
             
-            is_valid = all(dep["Name"] and dep["Gender"] and (dep["Age"] is not None) and dep["Relation"] for dep in dependents_data)
+            st.session_state.dependents_data = saved_deps
+            
+            is_valid = all(dep["Name"] and dep["Gender"] and (dep["Age"] is not None) and dep["Relation"] for dep in saved_deps)
             
             if not is_valid:
                 st.warning("⚠️ Please fill in the Name, Gender, Age, and Relation for all dependent members to enable the Next button.")
                 
             if st.button("Next", key="btn_tab4_next", disabled=not is_valid, on_click=switch_tab, args=("Future Expenses Projection",)):
-                st.session_state.dependents_data = dependents_data
                 st.success("Dependent members' details saved successfully! Moving to the next step...")
                 
         elif st.session_state.get('dependent') == 'NO':
@@ -465,22 +510,25 @@ elif st.session_state.page == 'main_form':
     with tab5:
         st.subheader("Future Expenses Projection")
 
-        # --- ১. লোকেশন ইনপুট (মেমোরি সেভ সহ) ---
+        # --- ১. লোকেশন ইনপুট ---
         loc_options = ["Village", "Semi-village", "Small City", "City", "Megacity"]
         saved_loc = st.session_state.get('location')
         loc_idx = loc_options.index(saved_loc) if saved_loc in loc_options else None
         
+        def update_location():
+            st.session_state.location = st.session_state.location_type
+            
         location = st.selectbox(
             "Where do you live?",
             loc_options,
             index=loc_idx,
-            key="location_type"
+            key="location_type",
+            on_change=update_location
         )
 
         st.write("---")
 
         if location:
-            # ২. টোটাল মেম্বার ক্যালকুলেশন
             user_count = 1
             spouse_count = 1 if st.session_state.get('married') == 'YES' else 0
             
@@ -492,15 +540,12 @@ elif st.session_state.page == 'main_form':
 
             total_member = user_count + spouse_count + child_count + dep_count
 
-            # ৩. টোটাল এক্সপেন্স ক্যালকুলেশন
             user_exp = st.session_state.get('expenses', 0)
             spouse_exp = st.session_state.get('spouse_expenses', 0)
             total_expense = user_exp + spouse_exp
 
-            # 4. Expense Per Head
             exp_per_head = total_expense / total_member if total_member > 0 else 0
 
-            # 5. Lifestyle Status Logic
             levels = ["Basic", "Modest", "Standard", "Comfortable", "Upper_Middle class", "Affluent", "Luxury", "Elite"]
             lvl = 0 
 
@@ -551,6 +596,7 @@ elif st.session_state.page == 'main_form':
                 else: lvl = 7
 
             style_status = levels[lvl]
+            st.session_state.current_lifestyle_status = style_status
 
             st.info(f"📊 **Calculation:** Total Members: **{total_member}** | Total Family Expense: **₹ {total_expense:,.2f}** | Per Head Expense: **₹ {exp_per_head:,.2f}**")
             st.success(f"As per your expenses, your default lifestyle status is: **{style_status.upper()}**")
@@ -561,6 +607,11 @@ elif st.session_state.page == 'main_form':
             # ৬. Customized Goal List 
             # ==============================================================
             st.markdown("### 🎯 Customized Goal List")
+            
+            # চেকবক্সগুলোর স্টেট সেভ করার লজিক
+            def toggle_goal(goal_key):
+                st.session_state[goal_key] = st.session_state[f"chk_{goal_key}"]
+
             final_goals_list = []
 
             # ----------------------------------------------------
@@ -574,23 +625,23 @@ elif st.session_state.page == 'main_form':
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    g_retire = st.checkbox("Retirement Fund", value=True, key="u_retire")
-                    g_med_emerg = st.checkbox("Medical Emergency Fund", value=True, key="u_med_emerg")
-                    g_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="u_emerg")
+                    g_retire = st.checkbox("Retirement Fund", value=st.session_state.get('goal_retire', True), key="chk_goal_retire", on_change=toggle_goal, args=('goal_retire',))
+                    g_med_emerg = st.checkbox("Medical Emergency Fund", value=st.session_state.get('goal_med_emerg', True), key="chk_goal_med_emerg", on_change=toggle_goal, args=('goal_med_emerg',))
+                    g_emerg = st.checkbox("Contingency/Emergency Fund", value=st.session_state.get('goal_emerg', True), key="chk_goal_emerg", on_change=toggle_goal, args=('goal_emerg',))
                     
                 with col2:
-                    g_marriage = st.checkbox("Marriage", value=True, key="u_marriage")
-                    g_child_plan = st.checkbox("Child Planning", value=True, key="u_child_plan")
+                    g_marriage = st.checkbox("Marriage", value=st.session_state.get('goal_marriage', True), key="chk_goal_marriage", on_change=toggle_goal, args=('goal_marriage',))
+                    g_child_plan = st.checkbox("Child Planning", value=st.session_state.get('goal_child_plan', True), key="chk_goal_child_plan", on_change=toggle_goal, args=('goal_child_plan',))
                     
                     num_planned_child = 0
                     child_goals_status = {}
                     
                     if g_child_plan:
-                        num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=1, step=1, key="u_plan_child_qty")
+                        num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=st.session_state.get('plan_child_qty', 1), step=1, key="plan_child_qty")
                         for i in range(1, num_planned_child + 1):
                             st.markdown(f"**🔹 For Child {i}:**")
-                            child_goals_status[f"c{i}_edu"] = st.checkbox(f"Child {i} Education", value=True, key=f"u_chk_c{i}_edu")
-                            child_goals_status[f"c{i}_mar"] = st.checkbox(f"Child {i} Marriage", value=True, key=f"u_chk_c{i}_mar")
+                            child_goals_status[f"c{i}_edu"] = st.checkbox(f"Child {i} Education", value=st.session_state.get(f'goal_c{i}_edu', True), key=f"chk_goal_c{i}_edu", on_change=toggle_goal, args=(f'goal_c{i}_edu',))
+                            child_goals_status[f"c{i}_mar"] = st.checkbox(f"Child {i} Marriage", value=st.session_state.get(f'goal_c{i}_mar', True), key=f"chk_goal_c{i}_mar", on_change=toggle_goal, args=(f'goal_c{i}_mar',))
 
                 st.write("---")
                 
@@ -604,9 +655,9 @@ elif st.session_state.page == 'main_form':
                 for idx, goal_name in enumerate(additional_goals):
                     col = add_cols[idx % 3]
                     with col:
-                        is_checked = st.checkbox(goal_name, value=False, key=f"u_chk_{goal_name}")
+                        is_checked = st.checkbox(goal_name, value=st.session_state.get(f'add_goal_{goal_name}', False), key=f"chk_add_goal_{goal_name}", on_change=toggle_goal, args=(f'add_goal_{goal_name}',))
                         if is_checked:
-                            qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"u_qty_{goal_name}")
+                            qty = st.number_input(f"Qty", min_value=1, value=st.session_state.get(f'add_qty_{goal_name}', 1), step=1, key=f"add_qty_{goal_name}")
                             selected_additional_goals[goal_name] = qty
 
                 if g_retire: final_goals_list.append("Retirement Fund")
@@ -635,9 +686,9 @@ elif st.session_state.page == 'main_form':
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    m_retire = st.checkbox("Retirement Fund", value=True, key="m_retire")
-                    m_med_emerg = st.checkbox("Medical Emergency Fund", value=True, key="m_med_emerg")
-                    m_emerg = st.checkbox("Contingency/Emergency Fund", value=True, key="m_emerg")
+                    m_retire = st.checkbox("Retirement Fund", value=st.session_state.get('goal_retire', True), key="chk_goal_retire", on_change=toggle_goal, args=('goal_retire',))
+                    m_med_emerg = st.checkbox("Medical Emergency Fund", value=st.session_state.get('goal_med_emerg', True), key="chk_goal_med_emerg", on_change=toggle_goal, args=('goal_med_emerg',))
+                    m_emerg = st.checkbox("Contingency/Emergency Fund", value=st.session_state.get('goal_emerg', True), key="chk_goal_emerg", on_change=toggle_goal, args=('goal_emerg',))
                 
                 with col2:
                     has_child = st.session_state.get('child') == 'YES'
@@ -646,13 +697,13 @@ elif st.session_state.page == 'main_form':
                     planned_child_status = {}
                     
                     if not has_child:
-                        m_child_plan = st.checkbox("Child Planning", value=True, key="m_child_plan")
+                        m_child_plan = st.checkbox("Child Planning", value=st.session_state.get('goal_child_plan', True), key="chk_goal_child_plan", on_change=toggle_goal, args=('goal_child_plan',))
                         if m_child_plan:
-                            num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=1, step=1, key="m_plan_child_qty")
+                            num_planned_child = st.number_input("How many children do you plan to have?", min_value=1, max_value=10, value=st.session_state.get('plan_child_qty', 1), step=1, key="plan_child_qty")
                             for i in range(1, num_planned_child + 1):
                                 st.markdown(f"**🔹 For Future Child {i}:**")
-                                planned_child_status[f"fc{i}_edu"] = st.checkbox(f"Future Child {i} Education", value=True, key=f"m_chk_fc{i}_edu")
-                                planned_child_status[f"fc{i}_mar"] = st.checkbox(f"Future Child {i} Marriage", value=True, key=f"m_chk_fc{i}_mar")
+                                planned_child_status[f"fc{i}_edu"] = st.checkbox(f"Future Child {i} Education", value=st.session_state.get(f'goal_fc{i}_edu', True), key=f"chk_goal_fc{i}_edu", on_change=toggle_goal, args=(f'goal_fc{i}_edu',))
+                                planned_child_status[f"fc{i}_mar"] = st.checkbox(f"Future Child {i} Marriage", value=st.session_state.get(f'goal_fc{i}_mar', True), key=f"chk_goal_fc{i}_mar", on_change=toggle_goal, args=(f'goal_fc{i}_mar',))
 
                 existing_child_status = {}
                 if has_child:
@@ -662,8 +713,8 @@ elif st.session_state.page == 'main_form':
                     for i, kid in enumerate(kids):
                         kid_name = kid['Name'] if kid['Name'] else f"Child {i+1}"
                         st.markdown(f"**🔹 For {kid_name}:**")
-                        existing_child_status[f"{kid_name}_edu"] = st.checkbox(f"Education Expense for {kid_name}", value=True, key=f"m_chk_ex_{i}_edu")
-                        existing_child_status[f"{kid_name}_mar"] = st.checkbox(f"Marriage Expense for {kid_name}", value=True, key=f"m_chk_ex_{i}_mar")
+                        existing_child_status[f"{kid_name}_edu"] = st.checkbox(f"Education Expense for {kid_name}", value=st.session_state.get(f'goal_ex_{i}_edu', True), key=f"chk_goal_ex_{i}_edu", on_change=toggle_goal, args=(f'goal_ex_{i}_edu',))
+                        existing_child_status[f"{kid_name}_mar"] = st.checkbox(f"Marriage Expense for {kid_name}", value=st.session_state.get(f'goal_ex_{i}_mar', True), key=f"chk_goal_ex_{i}_mar", on_change=toggle_goal, args=(f'goal_ex_{i}_mar',))
                 
                 st.write("---")
                 st.markdown("#### ➕ Additional Goals")
@@ -678,9 +729,9 @@ elif st.session_state.page == 'main_form':
                 for idx, goal_name in enumerate(additional_goals):
                     col = add_cols[idx % 3]
                     with col:
-                        is_checked = st.checkbox(goal_name, value=False, key=f"m_add_{idx}")
+                        is_checked = st.checkbox(goal_name, value=st.session_state.get(f'add_goal_{idx}', False), key=f"chk_add_goal_{idx}", on_change=toggle_goal, args=(f'add_goal_{idx}',))
                         if is_checked:
-                            qty = st.number_input(f"Qty", min_value=1, value=1, step=1, key=f"m_qty_{idx}")
+                            qty = st.number_input(f"Qty", min_value=1, value=st.session_state.get(f'add_qty_{idx}', 1), step=1, key=f"add_qty_{idx}")
                             selected_additional_goals[goal_name] = qty
 
                 if m_retire: final_goals_list.append("Retirement Fund")
@@ -708,8 +759,10 @@ elif st.session_state.page == 'main_form':
                     else:
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
+            st.session_state.final_goals_list = final_goals_list
+
             # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি
+            # ৭. ৬-কলামের টেবিল তৈরি 
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
@@ -736,15 +789,25 @@ elif st.session_state.page == 'main_form':
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
-                goal_custom_names = {} 
-                goal_present_values = {}
-                goal_durations = {} 
-                goal_inflations = {} 
+                goal_custom_names = st.session_state.get('goal_custom_names', {})
+                goal_present_values = st.session_state.get('goal_present_values', {})
+                goal_durations = st.session_state.get('goal_durations', {})
+                goal_inflations = st.session_state.get('goal_inflations', {})
                 goal_future_values = {} 
                 
+                # ইনপুট সেভ করার লজিক
+                def update_goal_data(goal_key, dict_name):
+                    if dict_name == 'pv': st.session_state.goal_present_values[goal_key] = st.session_state[f"input_pv_{goal_key}"]
+                    elif dict_name == 'dur': st.session_state.goal_durations[goal_key] = st.session_state[f"input_dur_{goal_key}"]
+                    elif dict_name == 'inf': st.session_state.goal_inflations[goal_key] = st.session_state[f"input_inf_{goal_key}"]
+                    elif dict_name == 'name': st.session_state.goal_custom_names[goal_key] = st.session_state[f"input_name_{goal_key}"]
+
                 for i, goal in enumerate(final_goals_list):
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
                     
+                    # ------------------------------------------
+                    # Column 2 (Present Value)
+                    # ------------------------------------------
                     with c2: 
                         default_val = 0.0
                         
@@ -784,21 +847,28 @@ elif st.session_state.page == 'main_form':
                             elif style_status == "Luxury": default_val = 10000000.0    
                             elif style_status == "Elite": default_val = 25000000.0 
                         
+                        # মেমোরি থেকে ভ্যালু আনা
+                        current_pv = goal_present_values.get(goal, default_val)
+                        
                         pv_value = st.number_input(
                             f"PV for {goal}",
-                            value=float(default_val), 
+                            value=float(current_pv), 
                             min_value=0.0, 
                             step=1000.0, 
                             format="%0.2f", 
-                            key=f"pv_{goal}", 
-                            label_visibility="collapsed"
+                            key=f"input_pv_{goal}", 
+                            label_visibility="collapsed",
+                            on_change=update_goal_data,
+                            args=(goal, 'pv')
                         )
-                        goal_present_values[goal] = pv_value
 
                         if goal == "Retirement Fund":
                             present_pension = (pv_value * 0.09) / 12
                             st.markdown(f"<div style='font-size:12px; color:gray; margin-top:-10px; margin-bottom:10px;'>Pension: ₹ {present_pension:,.2f} /mo</div>", unsafe_allow_html=True)
 
+                    # ------------------------------------------
+                    # Column 3 (Duration)
+                    # ------------------------------------------
                     with c3: 
                         default_dur = 0
                         if goal == "Retirement Fund":
@@ -820,32 +890,44 @@ elif st.session_state.page == 'main_form':
                             if k_gender == "MALE": default_dur = max(0, 28 - k_age)
                             else: default_dur = max(0, 24 - k_age)
                         
+                        current_dur = goal_durations.get(goal, default_dur)
+                        
                         dur_value = st.number_input(
                             f"Dur for {goal}",
-                            value=int(default_dur),
+                            value=int(current_dur),
                             min_value=0,
                             step=1,
-                            key=f"dur_{goal}",
-                            label_visibility="collapsed"
+                            key=f"input_dur_{goal}",
+                            label_visibility="collapsed",
+                            on_change=update_goal_data,
+                            args=(goal, 'dur')
                         )
-                        goal_durations[goal] = dur_value
 
+                    # ------------------------------------------
+                    # Column 4 (Inflation)
+                    # ------------------------------------------
                     with c4:
                         default_inf = 5.0 
                         if "Education" in goal: default_inf = 7.0
                         elif "Medical" in goal: default_inf = 8.0
                             
+                        current_inf = goal_inflations.get(goal, default_inf)
+                            
                         inf_value = st.number_input(
                             f"Inf for {goal}",
-                            value=float(default_inf),
+                            value=float(current_inf),
                             min_value=0.0,
                             step=0.5,
                             format="%0.1f", 
-                            key=f"inf_{goal}",
-                            label_visibility="collapsed"
+                            key=f"input_inf_{goal}",
+                            label_visibility="collapsed",
+                            on_change=update_goal_data,
+                            args=(goal, 'inf')
                         )
-                        goal_inflations[goal] = inf_value
 
+                    # ------------------------------------------
+                    # Column 5 (Future Value)
+                    # ------------------------------------------
                     with c5:
                         fv_value = pv_value * ((1 + (inf_value / 100)) ** dur_value)
                         goal_future_values[goal] = fv_value
@@ -866,39 +948,38 @@ elif st.session_state.page == 'main_form':
                             future_pension = (fv_value * 0.09) / 12
                             st.markdown(f"<div style='font-size:12px; color:#007BFF; font-weight:bold; margin-top:5px; margin-bottom:10px;'>Pension: ₹ {future_pension:,.2f} /mo</div>", unsafe_allow_html=True)
 
+                    # ------------------------------------------
+                    # Column 1 (Goal Name Logic Update)
+                    # ------------------------------------------
                     with c1: 
                         if "Gadget" in goal:
+                            current_name = goal_custom_names.get(goal, goal)
                             custom_name = st.text_input(
                                 f"Name for {goal}",
-                                value=goal,
-                                key=f"custom_name_{goal}",
-                                label_visibility="collapsed"
+                                value=current_name,
+                                key=f"input_name_{goal}",
+                                label_visibility="collapsed",
+                                on_change=update_goal_data,
+                                args=(goal, 'name')
                             )
-                            goal_custom_names[goal] = custom_name
                         else:
                             st.write(f"🎯 **{goal}**")
                             goal_custom_names[goal] = goal 
                         
                     with c6: st.write("-")
+                    
+            st.session_state.goal_custom_names = goal_custom_names
+            st.session_state.goal_present_values = goal_present_values
+            st.session_state.goal_durations = goal_durations
+            st.session_state.goal_inflations = goal_inflations
+            st.session_state.goal_future_values = goal_future_values
 
             # ==============================================================
-            # ৮. Finalize Goal Button (Upgrade/Downgrade অপশন রিমুভ করা হলো)
+            # ৮. Finalize Goal Button 
             # ==============================================================
             st.write("---")
             
-            # এই বাটনে ক্লিক করলে সরাসরি Page 3 (Timeline Page) এ চলে যাবে
             if st.button("Finalize your goal", type="primary", key="btn_finalize_goals"):
-                st.session_state.location = location
-                st.session_state.current_lifestyle_level = lvl
-                st.session_state.current_lifestyle_status = style_status
-                st.session_state.final_goals_list = final_goals_list
-                st.session_state.goal_custom_names = goal_custom_names
-                st.session_state.goal_present_values = goal_present_values
-                st.session_state.goal_durations = goal_durations
-                st.session_state.goal_inflations = goal_inflations 
-                st.session_state.goal_future_values = goal_future_values 
-                
-                # Page 3 এ যাওয়ার নির্দেশ
                 st.session_state.page = 'timeline_page'
                 st.rerun()
 
