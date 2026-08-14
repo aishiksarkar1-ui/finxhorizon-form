@@ -737,14 +737,14 @@ elif st.session_state.page == 'main_form':
                 h2.markdown("**Present Value (₹)**")
                 h3.markdown("**Duration (Yrs)**")
                 h4.markdown("**Inflation (%)**") 
-                h5.markdown("**Future Value (₹)**") # Col 5 Update
+                h5.markdown("**Future Value (₹)**") 
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
                 goal_present_values = {}
                 goal_durations = {} 
                 goal_inflations = {} 
-                goal_future_values = {} # ফিউচার ভ্যালু সেভ করার জন্য
+                goal_future_values = {} 
                 
                 for i, goal in enumerate(final_goals_list):
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
@@ -859,21 +859,24 @@ elif st.session_state.page == 'main_form':
                         goal_inflations[goal] = inf_value
 
                     # ------------------------------------------
-                    # Column 5 (Future Value - Auto Calculated)
+                    # Column 5 (Future Value - Live Auto Update)
                     # ------------------------------------------
                     with c5:
-                        # Future Value Formula: FV = PV * (1 + r/100)^n
                         fv_value = pv_value * ((1 + (inf_value / 100)) ** dur_value)
-                        
-                        # Disabled ইনপুট বক্স ব্যবহার করা হয়েছে যাতে অ্যালাইনমেন্ট সুন্দর থাকে
-                        st.text_input(
-                            f"FV for {goal}",
-                            value=f"{fv_value:,.2f}", 
-                            disabled=True, 
-                            key=f"fv_{goal}",
-                            label_visibility="collapsed"
-                        )
                         goal_future_values[goal] = fv_value
+                        
+                        # Disabled text_input এর বদলে HTML/CSS দিয়ে হুবহু বক্সের মতো বানানো হলো
+                        st.markdown(
+                            f"""
+                            <div style='background-color: #f3f4f6; border: 1px solid #d1d5db; 
+                                        border-radius: 6px; padding: 7px 12px; color: #6b7280; 
+                                        font-size: 15px; height: 38px; display: flex; 
+                                        align-items: center;'>
+                                {fv_value:,.2f}
+                            </div>
+                            """, 
+                            unsafe_allow_html=True
+                        )
 
                     # ------------------------------------------
                     # Column 1 (Goal Name & Live Pension Update)
@@ -920,7 +923,7 @@ elif st.session_state.page == 'main_form':
                 st.session_state.goal_present_values = goal_present_values
                 st.session_state.goal_durations = goal_durations
                 st.session_state.goal_inflations = goal_inflations 
-                st.session_state.goal_future_values = goal_future_values # Future Value ডেটাও সেভ হলো
+                st.session_state.goal_future_values = goal_future_values
                 
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
 
