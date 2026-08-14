@@ -9,7 +9,8 @@ import json
 # এই ফাংশনটি আপনার ডেটাকে মুছে যাওয়ার হাত থেকে বাঁচাবে
 def save_safe_state():
     for key in list(st.session_state.keys()):
-        if not key.startswith("SAFE_") and key != "page":
+        # 'btn_' দিয়ে শুরু হওয়া কোনো বাটনের ডেটা আমরা সেভ করব না
+        if not key.startswith("SAFE_") and key != "page" and not key.startswith("btn_"):
             st.session_state["SAFE_" + key] = st.session_state[key]
 
 # পেজ লোড হওয়ার আগেই সেভ করা ডেটা ফর্মের বক্সে ফিরিয়ে আনা
@@ -17,7 +18,10 @@ for key in list(st.session_state.keys()):
     if key.startswith("SAFE_"):
         widget_key = key.replace("SAFE_", "")
         if widget_key not in st.session_state:
-            st.session_state[widget_key] = st.session_state[key]
+            try:
+                st.session_state[widget_key] = st.session_state[key]
+            except Exception:
+                pass # যদি Streamlit কোনো উইজেটে ডেটা বসাতে না দেয়, তাহলে অ্যাপ ক্র্যাশ না করে সেটিকে স্কিপ করে যাবে
 # ==========================================
 
 
