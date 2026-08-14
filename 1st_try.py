@@ -472,6 +472,7 @@ elif st.session_state.page == 'main_form':
 
 
 
+
 # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
     with tab5:
@@ -717,7 +718,7 @@ elif st.session_state.page == 'main_form':
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
             # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি 
+            # ৭. ৬-কলামের টেবিল তৈরি
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
@@ -744,7 +745,6 @@ elif st.session_state.page == 'main_form':
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
-                # ডেটা সেভ রাখার জন্য ডিকশনারি
                 goal_custom_names = {} 
                 goal_present_values = {}
                 goal_durations = {} 
@@ -754,9 +754,6 @@ elif st.session_state.page == 'main_form':
                 for i, goal in enumerate(final_goals_list):
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
                     
-                    # ------------------------------------------
-                    # Column 2 (Present Value)
-                    # ------------------------------------------
                     with c2: 
                         default_val = 0.0
                         
@@ -811,9 +808,6 @@ elif st.session_state.page == 'main_form':
                             present_pension = (pv_value * 0.09) / 12
                             st.markdown(f"<div style='font-size:12px; color:gray; margin-top:-10px; margin-bottom:10px;'>Pension: ₹ {present_pension:,.2f} /mo</div>", unsafe_allow_html=True)
 
-                    # ------------------------------------------
-                    # Column 3 (Duration)
-                    # ------------------------------------------
                     with c3: 
                         default_dur = 0
                         if goal == "Retirement Fund":
@@ -845,16 +839,10 @@ elif st.session_state.page == 'main_form':
                         )
                         goal_durations[goal] = dur_value
 
-                    # ------------------------------------------
-                    # Column 4 (Inflation)
-                    # ------------------------------------------
                     with c4:
                         default_inf = 5.0 
-                        
-                        if "Education" in goal:
-                            default_inf = 7.0
-                        elif "Medical" in goal:
-                            default_inf = 8.0
+                        if "Education" in goal: default_inf = 7.0
+                        elif "Medical" in goal: default_inf = 8.0
                             
                         inf_value = st.number_input(
                             f"Inf for {goal}",
@@ -867,9 +855,6 @@ elif st.session_state.page == 'main_form':
                         )
                         goal_inflations[goal] = inf_value
 
-                    # ------------------------------------------
-                    # Column 5 (Future Value)
-                    # ------------------------------------------
                     with c5:
                         fv_value = pv_value * ((1 + (inf_value / 100)) ** dur_value)
                         goal_future_values[goal] = fv_value
@@ -890,11 +875,7 @@ elif st.session_state.page == 'main_form':
                             future_pension = (fv_value * 0.09) / 12
                             st.markdown(f"<div style='font-size:12px; color:#007BFF; font-weight:bold; margin-top:5px; margin-bottom:10px;'>Pension: ₹ {future_pension:,.2f} /mo</div>", unsafe_allow_html=True)
 
-                    # ------------------------------------------
-                    # Column 1 (Goal Name Logic Update)
-                    # ------------------------------------------
                     with c1: 
-                        # শুধুমাত্র Gadget হলে এডিট করার অপশন (text_input) আসবে
                         if "Gadget" in goal:
                             custom_name = st.text_input(
                                 f"Name for {goal}",
@@ -904,42 +885,21 @@ elif st.session_state.page == 'main_form':
                             )
                             goal_custom_names[goal] = custom_name
                         else:
-                            # বাকি সব ক্ষেত্রে ফিক্সড টেক্সট দেখাবে
                             st.write(f"🎯 **{goal}**")
-                            goal_custom_names[goal] = goal # অরিজিনাল নামটাই ডিকশনারিতে সেভ থাকবে
+                            goal_custom_names[goal] = goal 
                         
                     with c6: st.write("-")
 
             # ==============================================================
-            # ৮. Upgrade / Downgrade Section
+            # ৮. Finalize Goal Button (Upgrade/Downgrade অপশন রিমুভ করা হলো)
             # ==============================================================
             st.write("---")
-            st.markdown("### Do you want to upgrade or downgrade your lifestyle?")
-            st.markdown("*According to your choice, your future expenses will be changed...*")
-
-            options = ["Keep Same (0)"]
-            if lvl > 0:
-                options.insert(0, "Downgrade (-1 Level)")
-            if lvl < 7:
-                options.append("Upgrade (+1 Level)")
-
-            lifestyle_change = st.radio(
-                "Select an option:",
-                options,
-                index=options.index("Keep Same (0)"),
-                key="lifestyle_change"
-            )
-
-            st.write("---")
             
-            # ----------------------------------------------------
-            # Next বাটন
-            # ----------------------------------------------------
-            if st.button("Next", key="btn_tab5_next", on_click=switch_tab, args=("Final Goals",)):
+            # এই বাটনে ক্লিক করলে সরাসরি Page 3 (Timeline Page) এ চলে যাবে
+            if st.button("Finalize your goal", type="primary", key="btn_finalize_goals"):
                 st.session_state.location = location
                 st.session_state.current_lifestyle_level = lvl
                 st.session_state.current_lifestyle_status = style_status
-                st.session_state.lifestyle_change_choice = lifestyle_change
                 st.session_state.final_goals_list = final_goals_list
                 st.session_state.goal_custom_names = goal_custom_names
                 st.session_state.goal_present_values = goal_present_values
@@ -947,7 +907,13 @@ elif st.session_state.page == 'main_form':
                 st.session_state.goal_inflations = goal_inflations 
                 st.session_state.goal_future_values = goal_future_values 
                 
-                st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
+                # Page 3 এ যাওয়ার নির্দেশ
+                st.session_state.page = 'timeline_page'
+                st.rerun()
 
         else:
             st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
+
+
+
+
