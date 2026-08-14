@@ -714,7 +714,7 @@ elif st.session_state.page == 'main_form':
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
             # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি (PV, Duration, Inflation)
+            # ৭. ৬-কলামের টেবিল তৈরি (PV, Duration, Inflation, Future Value)
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
@@ -736,14 +736,15 @@ elif st.session_state.page == 'main_form':
                 h1.markdown("**Goal Name**")
                 h2.markdown("**Present Value (₹)**")
                 h3.markdown("**Duration (Yrs)**")
-                h4.markdown("**Inflation (%)**") # Col 4 Update
-                h5.markdown("**Col 5**")
+                h4.markdown("**Inflation (%)**") 
+                h5.markdown("**Future Value (₹)**") # Col 5 Update
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
                 goal_present_values = {}
                 goal_durations = {} 
-                goal_inflations = {} # নতুন ডিকশনারি ইনফ্লেশন সেভ করার জন্য
+                goal_inflations = {} 
+                goal_future_values = {} # ফিউচার ভ্যালু সেভ করার জন্য
                 
                 for i, goal in enumerate(final_goals_list):
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
@@ -839,7 +840,7 @@ elif st.session_state.page == 'main_form':
                     # Column 4 (Inflation)
                     # ------------------------------------------
                     with c4:
-                        default_inf = 5.0 # সবার জন্য ডিফল্ট ৫%
+                        default_inf = 5.0 
                         
                         if "Education" in goal:
                             default_inf = 7.0
@@ -851,11 +852,28 @@ elif st.session_state.page == 'main_form':
                             value=float(default_inf),
                             min_value=0.0,
                             step=0.5,
-                            format="%0.1f", # দশমিকের পর ১ ঘর দেখাবে (যেমন: 5.0)
+                            format="%0.1f", 
                             key=f"inf_{goal}",
                             label_visibility="collapsed"
                         )
                         goal_inflations[goal] = inf_value
+
+                    # ------------------------------------------
+                    # Column 5 (Future Value - Auto Calculated)
+                    # ------------------------------------------
+                    with c5:
+                        # Future Value Formula: FV = PV * (1 + r/100)^n
+                        fv_value = pv_value * ((1 + (inf_value / 100)) ** dur_value)
+                        
+                        # Disabled ইনপুট বক্স ব্যবহার করা হয়েছে যাতে অ্যালাইনমেন্ট সুন্দর থাকে
+                        st.text_input(
+                            f"FV for {goal}",
+                            value=f"{fv_value:,.2f}", 
+                            disabled=True, 
+                            key=f"fv_{goal}",
+                            label_visibility="collapsed"
+                        )
+                        goal_future_values[goal] = fv_value
 
                     # ------------------------------------------
                     # Column 1 (Goal Name & Live Pension Update)
@@ -866,7 +884,6 @@ elif st.session_state.page == 'main_form':
                             monthly_pension = (pv_value * 0.09) / 12
                             st.markdown(f"<div style='font-size:12px; color:gray; margin-top:-10px;'>Pension: ₹ {monthly_pension:,.2f} /mo</div>", unsafe_allow_html=True)
                         
-                    with c5: st.write("-")
                     with c6: st.write("-")
 
             # ==============================================================
@@ -902,7 +919,8 @@ elif st.session_state.page == 'main_form':
                 st.session_state.final_goals_list = final_goals_list
                 st.session_state.goal_present_values = goal_present_values
                 st.session_state.goal_durations = goal_durations
-                st.session_state.goal_inflations = goal_inflations # ইনফ্লেশন ডেটাও সেভ হলো
+                st.session_state.goal_inflations = goal_inflations 
+                st.session_state.goal_future_values = goal_future_values # Future Value ডেটাও সেভ হলো
                 
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
 
