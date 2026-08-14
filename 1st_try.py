@@ -305,32 +305,42 @@ elif st.session_state.page == 'main_form':
 
   # 3rd ট্যাব এর ডিজাইন
     #____________________________________
-
-
-
-    
-   
     with tab3:
         st.subheader("Child & Dependent Details")
         
         # --- ১. বাচ্চাদের তথ্যের অংশ ---
         if st.session_state.get('child') == 'YES':
+            
+            # মেমোরি থেকে বাচ্চাদের আগের সংখ্যা তুলে আনা
+            saved_children = st.session_state.get('children_data', [])
+            default_num_child = len(saved_children) if len(saved_children) > 0 else 1
+            
             # কতজন সন্তান সেটা জানার ইনপুট
-            num_children = st.number_input("How many children do you have?", min_value=1, max_value=10, step=1, key="num_child")
+            num_children = st.number_input("How many children do you have?", min_value=1, max_value=10, step=1, value=default_num_child, key="num_child")
             children_data = []
             
             st.write("---")
             # লুপ চালিয়ে ডাইনামিক টেবিল/কলাম তৈরি করা
             for i in range(num_children):
                 st.markdown(f"**Child {i+1} Details:**")
+                
+                # মেমোরি থেকে বাচ্চাদের নাম, বয়স, জেন্ডার আনা (যদি আগে থেকে সেভ থাকে)
+                c_name_def = saved_children[i].get('Name', "") if i < len(saved_children) else ""
+                c_gen_def = saved_children[i].get('Gender') if i < len(saved_children) else None
+                c_age_def = saved_children[i].get('Age') if i < len(saved_children) else None
+                
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    c_name = st.text_input("Name", key=f"c_name_{i}")
+                    c_name = st.text_input("Name", value=c_name_def, key=f"c_name_{i}")
                 with col2:
-                    c_gender = st.selectbox("Gender", ['MALE', 'FEMALE', 'OTHER'], index=None, key=f"c_gender_{i}")
+                    gen_options = ['MALE', 'FEMALE', 'OTHER']
+                    gen_idx = gen_options.index(c_gen_def) if c_gen_def in gen_options else None
+                    c_gender = st.selectbox("Gender", gen_options, index=gen_idx, key=f"c_gender_{i}")
                 with col3:
-                    c_age = st.selectbox("Age", [None] + list(range(0, 51)), format_func=lambda x: "Select age" if x is None else f"{x} Years", key=f"c_age_{i}")
+                    age_options = [None] + list(range(0, 51))
+                    age_idx = age_options.index(c_age_def) if c_age_def in age_options else 0
+                    c_age = st.selectbox("Age", age_options, index=age_idx, format_func=lambda x: "Select age" if x is None else f"{x} Years", key=f"c_age_{i}")
                 
                 children_data.append({"Name": c_name, "Gender": c_gender, "Age": c_age})
                 st.write("")
@@ -349,117 +359,98 @@ elif st.session_state.page == 'main_form':
 
         # --- ২. Dependent Member এর প্রশ্ন (সবার জন্য) ---
         st.write("---")
+        
+        dep_options = ('YES', 'NO')
+        saved_dep = st.session_state.get('dependent')
+        dep_idx = dep_options.index(saved_dep) if saved_dep in dep_options else None
+        
         dependent = st.radio(
             "Do you have any member in your family who is completely dependent on your income?",
-            ('YES', 'NO'),
-            index=None,
+            dep_options,
+            index=dep_idx,
             key="has_dependent"
         )
         
         # --- ৩. Next বাটন এবং ডাইনামিক রুট লজিক ---
-        
-        # dependent 'YES' হলে 4th ট্যাব (Dependent Member) এ যাবে, নাহলে 5th ট্যাব (Income & Expenses) এ যাবে
         target_tab = "Dependent Member" if dependent == 'YES' else "Future Expenses Projection"
         
-        # ভ্যালিডেশন চেক (সব ফিলাপ করা হয়েছে কি না)
         all_filled = True
         if st.session_state.get('child') == 'YES':
-            # চেক করছে বাচ্চাদের নাম, জেন্ডার এবং বয়স দেওয়া হয়েছে কি না
             all_filled = all(child["Name"] and child["Gender"] and child["Age"] is not None for child in children_data)
         
-        # ফর্ম তখনই valid হবে যখন বাচ্চাদের তথ্য (যদি থাকে) এবং Dependent এর রেডিও বাটন সিলেক্ট করা হবে
         is_valid = all_filled and (dependent is not None)
         
         if not is_valid:
             st.warning("⚠️ Please fill in all details and answer the dependent question to enable the Next button.")
 
-        # স্মার্ট Next বাটন: ফর্ম পূরণ না হওয়া পর্যন্ত বাটনটি disabled (হালকা রঙ) থাকবে
         if st.button("Next", key="btn_tab3_next", disabled=not is_valid, on_click=switch_tab, args=(target_tab,)):
-            # ডেটাগুলো মেমোরিতে সেভ করা হচ্ছে
             if st.session_state.get('child') == 'YES':
                 st.session_state.children_data = children_data
             st.session_state.dependent = dependent
-            
             st.success("Details saved successfully! Moving to the next step...")
 
 
-
-# 4th ট্যাব এর ডিজাইন (Dependent Member)
+    # 4th ট্যাব এর ডিজাইন (Dependent Member)
     #____________________________________
     with tab4:
         st.subheader("Dependent Member Details")
         
-        # যদি ৩য় ট্যাবে Dependent থাকার কথা 'YES' বলে থাকে
         if st.session_state.get('dependent') == 'YES':
             st.info("Please provide the details of your dependent family members below:")
             
-            # কতজন নির্ভরশীল সদস্য সেটা জানার ইনপুট
+            # মেমোরি থেকে Dependent-এর সংখ্যা আনা
+            saved_deps = st.session_state.get('dependents_data', [])
+            default_num_dep = len(saved_deps) if len(saved_deps) > 0 else 1
+            
             num_dependents = st.number_input(
                 "HOW MANY DEPENDENT MEMBERS ARE THERE IN YOUR FAMILY?", 
-                min_value=1, max_value=10, step=1, key="num_dep"
+                min_value=1, max_value=10, step=1, value=default_num_dep, key="num_dep"
             )
             
-            # ডেটা সেভ রাখার জন্য একটি ফাঁকা লিস্ট
             dependents_data = []
-            
             st.write("---") 
             
-            # লুপ চালিয়ে ডাইনামিক টেবিল/কলাম তৈরি করা
             for i in range(num_dependents):
                 st.markdown(f"**Dependent Member {i+1}:**")
                 
-                # এবার ৪টি কলাম তৈরি করা হলো (Name, Gender, Age, Relation)
+                # মেমোরি থেকে আগের ডেটা আনা
+                d_name_def = saved_deps[i].get('Name', "") if i < len(saved_deps) else ""
+                d_gen_def = saved_deps[i].get('Gender') if i < len(saved_deps) else None
+                d_age_def = saved_deps[i].get('Age') if i < len(saved_deps) else None
+                d_rel_def = saved_deps[i].get('Relation') if i < len(saved_deps) else None
+                
                 col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
-                    d_name = st.text_input("Name", key=f"d_name_{i}")
+                    d_name = st.text_input("Name", value=d_name_def, key=f"d_name_{i}")
                 
                 with col2:
-                    d_gender = st.selectbox("Gender", ['MALE', 'FEMALE', 'OTHER'], index=None, key=f"d_gender_{i}")
+                    d_gen_options = ['MALE', 'FEMALE', 'OTHER']
+                    d_gen_idx = d_gen_options.index(d_gen_def) if d_gen_def in d_gen_options else None
+                    d_gender = st.selectbox("Gender", d_gen_options, index=d_gen_idx, key=f"d_gender_{i}")
                 
                 with col3:
-                    # বয়স (০ থেকে ১০০ বছর পর্যন্ত)
-                    d_age = st.selectbox(
-                        "Age", 
-                        [None] + list(range(0, 101)), 
-                        format_func=lambda x: "Select age" if x is None else f"{x} Years",
-                        key=f"d_age_{i}"
-                    )
+                    d_age_options = [None] + list(range(0, 101))
+                    d_age_idx = d_age_options.index(d_age_def) if d_age_def in d_age_options else 0
+                    d_age = st.selectbox("Age", d_age_options, index=d_age_idx, format_func=lambda x: "Select age" if x is None else f"{x} Years", key=f"d_age_{i}")
                     
                 with col4:
-                    # সম্পর্ক (Relation)
-                    d_relation = st.selectbox(
-                        "Relation", 
-                        ['FATHER', 'MOTHER', 'BROTHER', 'SISTER', 'OTHER'], 
-                        index=None, 
-                        key=f"d_rel_{i}"
-                    )
+                    rel_options = ['FATHER', 'MOTHER', 'BROTHER', 'SISTER', 'OTHER']
+                    rel_idx = rel_options.index(d_rel_def) if d_rel_def in rel_options else None
+                    d_relation = st.selectbox("Relation", rel_options, index=rel_idx, key=f"d_rel_{i}")
                 
-                # ইউজারের দেওয়া ডেটা লিস্টে যোগ করা হচ্ছে
-                dependents_data.append({
-                    "Name": d_name,
-                    "Gender": d_gender,
-                    "Age": d_age,
-                    "Relation": d_relation
-                })
-                
-                st.write("") # ফর্মের মাঝখানে ফাঁকা জায়গা
+                dependents_data.append({"Name": d_name, "Gender": d_gender, "Age": d_age, "Relation": d_relation})
+                st.write("")
             
-            # --- ভ্যালিডেশন লজিক (Smart Disabled Button) ---
-            # চেক করা হচ্ছে সব সদস্যের নাম, জেন্ডার, বয়স এবং সম্পর্ক দেওয়া হয়েছে কি না
             is_valid = all(dep["Name"] and dep["Gender"] and (dep["Age"] is not None) and dep["Relation"] for dep in dependents_data)
             
             if not is_valid:
                 st.warning("⚠️ Please fill in the Name, Gender, Age, and Relation for all dependent members to enable the Next button.")
                 
-            # ----------------------------------------------------
-            # Next বাটনে Income & Expenses ট্যাবে যাওয়ার ব্যবস্থা
-            # ----------------------------------------------------
             if st.button("Next", key="btn_tab4_next", disabled=not is_valid, on_click=switch_tab, args=("Future Expenses Projection",)):
                 st.session_state.dependents_data = dependents_data
                 st.success("Dependent members' details saved successfully! Moving to the next step...")
                 
-        # যদি ৩য় ট্যাবে Dependent থাকার কথা 'NO' বলে থাকে
         elif st.session_state.get('dependent') == 'NO':
             st.info("Since you do not have any dependent family members, this section is not applicable.")
             if st.button("Skip to Income & Expenses", key="btn_tab4_skip", on_click=switch_tab, args=("Future Expenses Projection",)):
@@ -469,20 +460,20 @@ elif st.session_state.page == 'main_form':
             st.warning("Please complete the Child & Dependent Details tab first.")
 
 
-
-
-
-
-# 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
+    # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
     with tab5:
         st.subheader("Future Expenses Projection")
 
-        # ১. লোকেশন ইনপুট
+        # --- ১. লোকেশন ইনপুট (মেমোরি সেভ সহ) ---
+        loc_options = ["Village", "Semi-village", "Small City", "City", "Megacity"]
+        saved_loc = st.session_state.get('location')
+        loc_idx = loc_options.index(saved_loc) if saved_loc in loc_options else None
+        
         location = st.selectbox(
             "Where do you live?",
-            ["Village", "Semi-village", "Small City", "City", "Megacity"],
-            index=None,
+            loc_options,
+            index=loc_idx,
             key="location_type"
         )
 
