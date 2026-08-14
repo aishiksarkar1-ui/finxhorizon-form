@@ -469,6 +469,10 @@ elif st.session_state.page == 'main_form':
             st.warning("Please complete the Child & Dependent Details tab first.")
 
 
+
+
+
+
 # 5th ট্যাব এর ডিজাইন (Future Expenses Projection & Goal Planning)
     #____________________________________
     with tab5:
@@ -714,7 +718,7 @@ elif st.session_state.page == 'main_form':
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
             # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি (PV, Duration, Inflation, Future Value)
+            # ৭. ৬-কলামের টেবিল তৈরি 
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
@@ -741,6 +745,8 @@ elif st.session_state.page == 'main_form':
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
+                # ডেটা সেভ রাখার জন্য ডিকশনারি
+                goal_custom_names = {} # ক্লায়েন্টের দেওয়া কাস্টম নাম সেভ রাখার জন্য
                 goal_present_values = {}
                 goal_durations = {} 
                 goal_inflations = {} 
@@ -750,13 +756,7 @@ elif st.session_state.page == 'main_form':
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
                     
                     # ------------------------------------------
-                    # Column 1 (Goal Name)
-                    # ------------------------------------------
-                    with c1: 
-                        st.write(f"🎯 **{goal}**")
-
-                    # ------------------------------------------
-                    # Column 2 (Present Value & Present Pension)
+                    # Column 2 (Present Value)
                     # ------------------------------------------
                     with c2: 
                         default_val = 0.0
@@ -808,7 +808,6 @@ elif st.session_state.page == 'main_form':
                         )
                         goal_present_values[goal] = pv_value
 
-                        # PV এর ঠিক নিচে Present Pension দেখানো হলো
                         if goal == "Retirement Fund":
                             present_pension = (pv_value * 0.09) / 12
                             st.markdown(f"<div style='font-size:12px; color:gray; margin-top:-10px; margin-bottom:10px;'>Pension: ₹ {present_pension:,.2f} /mo</div>", unsafe_allow_html=True)
@@ -870,7 +869,7 @@ elif st.session_state.page == 'main_form':
                         goal_inflations[goal] = inf_value
 
                     # ------------------------------------------
-                    # Column 5 (Future Value & Future Pension)
+                    # Column 5 (Future Value)
                     # ------------------------------------------
                     with c5:
                         fv_value = pv_value * ((1 + (inf_value / 100)) ** dur_value)
@@ -888,10 +887,23 @@ elif st.session_state.page == 'main_form':
                             unsafe_allow_html=True
                         )
 
-                        # FV এর ঠিক নিচে Future Pension দেখানো হলো
                         if goal == "Retirement Fund":
                             future_pension = (fv_value * 0.09) / 12
                             st.markdown(f"<div style='font-size:12px; color:#007BFF; font-weight:bold; margin-top:5px; margin-bottom:10px;'>Pension: ₹ {future_pension:,.2f} /mo</div>", unsafe_allow_html=True)
+
+                    # ------------------------------------------
+                    # Column 1 (Editable Goal Name) Update
+                    # ------------------------------------------
+                    with c1: 
+                        # ক্লায়েন্ট যাতে নিজের মতো নাম দিতে পারে তার জন্য text_input
+                        custom_name = st.text_input(
+                            f"Name for {goal}",
+                            value=goal,
+                            key=f"custom_name_{goal}",
+                            label_visibility="collapsed"
+                        )
+                        # ইউজারের দেওয়া নতুন নামটা ডিকশনারিতে সেভ করা হলো
+                        goal_custom_names[goal] = custom_name
                         
                     with c6: st.write("-")
 
@@ -926,6 +938,7 @@ elif st.session_state.page == 'main_form':
                 st.session_state.current_lifestyle_status = style_status
                 st.session_state.lifestyle_change_choice = lifestyle_change
                 st.session_state.final_goals_list = final_goals_list
+                st.session_state.goal_custom_names = goal_custom_names # কাস্টম নাম সেভ করা হলো
                 st.session_state.goal_present_values = goal_present_values
                 st.session_state.goal_durations = goal_durations
                 st.session_state.goal_inflations = goal_inflations 
@@ -935,3 +948,4 @@ elif st.session_state.page == 'main_form':
 
         else:
             st.warning("⚠️ Please select your location to see your lifestyle calculation and enable the Next button.")
+
