@@ -718,28 +718,36 @@ elif st.session_state.page == 'main_form':
                         for i in range(1, qty + 1): final_goals_list.append(f"{goal} {i}")
 
             # ==============================================================
-            # ৭. ৬-কলামের টেবিল তৈরি (Present Value সহ)
+            # ৭. ৬-কলামের টেবিল তৈরি (Col 2: PV, Col 3: Duration সহ)
             # ==============================================================
             if len(final_goals_list) > 0:
                 st.write("---")
                 st.markdown("### 📋 Your Customized Goal Table")
                 
-                # --- Col 2 এর ডিফল্ট ভ্যালু ক্যালকুলেশনের জন্য আয় এবং খরচ ---
                 total_monthly_income = st.session_state.get('income', 0) + st.session_state.get('spouse_income', 0)
                 annual_income = total_monthly_income * 12
                 annual_expense = total_expense * 12 
+                
+                user_age = st.session_state.get('age', 30) or 30
+                
+                # বাচ্চাদের ডেটা ডিকশনারি তৈরি করা (যাতে নাম দিয়ে বয়স ও জেন্ডার সহজে বের করা যায়)
+                kids_dict = {}
+                for i, kid in enumerate(st.session_state.get('children_data', [])):
+                    k_name = kid.get('Name') if kid.get('Name') else f"Child {i+1}"
+                    kids_dict[k_name] = kid
                 
                 # টেবিলের হেডার
                 h1, h2, h3, h4, h5, h6 = st.columns(6)
                 h1.markdown("**Goal Name**")
                 h2.markdown("**Present Value (₹)**")
-                h3.markdown("**Col 3**")
+                h3.markdown("**Duration (Yrs)**") # Col 3
                 h4.markdown("**Col 4**")
                 h5.markdown("**Col 5**")
                 h6.markdown("**Col 6**")
                 st.markdown("---")
                 
                 goal_present_values = {}
+                goal_durations = {} # ডিউরেশন সেভ করার জন্য
                 
                 for i, goal in enumerate(final_goals_list):
                     c1, c2, c3, c4, c5, c6 = st.columns(6)
@@ -747,6 +755,9 @@ elif st.session_state.page == 'main_form':
                     with c1: 
                         st.write(f"🎯 **{goal}**")
                         
+                    # ==========================================
+                    # Column 2 (Present Value)
+                    # ==========================================
                     with c2: 
                         default_val = 0.0
                         
@@ -797,7 +808,55 @@ elif st.session_state.page == 'main_form':
                         )
                         goal_present_values[goal] = pv_value
                         
-                    with c3: st.write("-")
+                    # ==========================================
+                    # Column 3 (Duration)
+                    # ==========================================
+                    with c3: 
+                        default_dur = 0
+                        
+                        if goal == "Retirement Fund":
+                            default_dur = max(0, 60 - user_age)
+                            
+                        elif goal in ["Medical Emergency Fund", "Contingency/Emergency Fund"]:
+                            default_dur = 0
+                            
+                        # Future Child বা Additional Child এর জন্য
+                        elif "Future Child" in goal or "Additional Child" in goal or (goal.startswith("Child ") and st.session_state.get('married') == 'NO'):
+                            if "Education" in goal:
+                                default_dur = 17
+                            elif "Marriage" in goal:
+                                default_dur = 24
+                                
+                        # Existing Child Education এর জন্য
+                        elif goal.startswith("Education Expense for "):
+                            k_name = goal.replace("Education Expense for ", "")
+                            k_age = kids_dict.get(k_name, {}).get("Age") or 0
+                            default_dur = max(0, 17 - k_age)
+                            
+                        # Existing Child Marriage এর জন্য
+                        elif goal.startswith("Marriage Expense for "):
+                            k_name = goal.replace("Marriage Expense for ", "")
+                            kid_info = kids_dict.get(k_name, {})
+                            k_age = kid_info.get("Age") or 0
+                            k_gender = kid_info.get("Gender", "FEMALE")
+                            
+                            # ছেলে হলে ২৮, অন্যথায় ২৪
+                            if k_gender == "MALE":
+                                default_dur = max(0, 28 - k_age)
+                            else:
+                                default_dur = max(0, 24 - k_age)
+                        
+                        # ডিউরেশন ইনপুট বক্স
+                        dur_value = st.number_input(
+                            f"Dur for {goal}",
+                            value=int(default_dur),
+                            min_value=0,
+                            step=1,
+                            key=f"dur_{goal}",
+                            label_visibility="collapsed"
+                        )
+                        goal_durations[goal] = dur_value
+                        
                     with c4: st.write("-")
                     with c5: st.write("-")
                     with c6: st.write("-")
@@ -834,6 +893,7 @@ elif st.session_state.page == 'main_form':
                 st.session_state.lifestyle_change_choice = lifestyle_change
                 st.session_state.final_goals_list = final_goals_list
                 st.session_state.goal_present_values = goal_present_values
+                st.session_state.goal_durations = goal_durations # নতুন ডিউরেশন সেভ হলো
                 
                 st.success("Lifestyle & Goals projection saved! Moving to Final Goals...")
 
