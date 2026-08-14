@@ -751,23 +751,14 @@ elif st.session_state.page == 'main_form':
                         default_val = 0.0
                         
                         if goal == "Retirement Fund":
-                            # Lifestyle Status অনুযায়ী রিটায়ারমেন্ট ফান্ডের ডায়নামিক ক্যালকুলেশন
-                            if style_status == "Basic":
-                                default_val = (annual_income * 0.40) / 0.09
-                            elif style_status == "Modest":
-                                default_val = (annual_income * 0.45) / 0.09
-                            elif style_status == "Standard":
-                                default_val = (annual_income * 0.50) / 0.09
-                            elif style_status == "Comfortable":
-                                default_val = (annual_income * 0.60) / 0.09
-                            elif style_status == "Upper_Middle class":
-                                default_val = (annual_income * 0.70) / 0.09
-                            elif style_status == "Affluent":
-                                default_val = (annual_income * 0.80) / 0.09
-                            elif style_status == "Luxury":
-                                default_val = (annual_income * 0.90) / 0.09
-                            elif style_status == "Elite":
-                                default_val = annual_income / 0.09 # (100% / 9%)
+                            if style_status == "Basic": default_val = (annual_income * 0.40) / 0.09
+                            elif style_status == "Modest": default_val = (annual_income * 0.45) / 0.09
+                            elif style_status == "Standard": default_val = (annual_income * 0.50) / 0.09
+                            elif style_status == "Comfortable": default_val = (annual_income * 0.60) / 0.09
+                            elif style_status == "Upper_Middle class": default_val = (annual_income * 0.70) / 0.09
+                            elif style_status == "Affluent": default_val = (annual_income * 0.80) / 0.09
+                            elif style_status == "Luxury": default_val = (annual_income * 0.90) / 0.09
+                            elif style_status == "Elite": default_val = annual_income / 0.09 
                                 
                         elif goal == "Medical Emergency Fund":
                             default_val = float(annual_expense * 5)
@@ -776,23 +767,24 @@ elif st.session_state.page == 'main_form':
                             default_val = float(annual_income * 3)
                             
                         elif "Education" in goal:
-                            # Lifestyle Status অনুযায়ী Child Education এর Present Value (Current Cost)
-                            if style_status == "Basic":
-                                default_val = 500000.0      # ৫ লাখ
-                            elif style_status == "Modest":
-                                default_val = 1000000.0     # ১০ লাখ
-                            elif style_status == "Standard":
-                                default_val = 1500000.0     # ১৫ লাখ
-                            elif style_status == "Comfortable":
-                                default_val = 2500000.0     # ২৫ লাখ
-                            elif style_status == "Upper_Middle class":
-                                default_val = 4000000.0     # ৪০ লাখ
-                            elif style_status == "Affluent":
-                                default_val = 6500000.0     # ৬৫ লাখ
-                            elif style_status == "Luxury":
-                                default_val = 10000000.0    # ১ কোটি
-                            elif style_status == "Elite":
-                                default_val = 20000000.0    # ২ কোটি
+                            if style_status == "Basic": default_val = 500000.0      
+                            elif style_status == "Modest": default_val = 1000000.0     
+                            elif style_status == "Standard": default_val = 1500000.0     
+                            elif style_status == "Comfortable": default_val = 2500000.0     
+                            elif style_status == "Upper_Middle class": default_val = 4000000.0     
+                            elif style_status == "Affluent": default_val = 6500000.0     
+                            elif style_status == "Luxury": default_val = 10000000.0    
+                            elif style_status == "Elite": default_val = 20000000.0    
+
+                        elif "Marriage" in goal:
+                            if style_status == "Basic": default_val = 1000000.0      
+                            elif style_status == "Modest": default_val = 1500000.0     
+                            elif style_status == "Standard": default_val = 2000000.0     
+                            elif style_status == "Comfortable": default_val = 2500000.0     
+                            elif style_status == "Upper_Middle class": default_val = 4000000.0     
+                            elif style_status == "Affluent": default_val = 6000000.0     
+                            elif style_status == "Luxury": default_val = 10000000.0    
+                            elif style_status == "Elite": default_val = 25000000.0 
                         
                         pv_value = st.number_input(
                             f"PV for {goal}",
